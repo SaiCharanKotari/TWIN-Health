@@ -1,0 +1,47 @@
+field_name,value,unit,description,example
+age,,years,Patient age in years,42
+sex,,male/female/other,Biological sex,male
+height_cm,,cm,Height in centimetres,172
+weight_kg,,kg,Weight in kilograms,70
+smoking_status,,never/former/current/unknown,Smoking history,never
+alcohol_use,,none/occasional/regular/unknown,Alcohol consumption,none
+physical_activity,,low/moderate/high/unknown,Physical activity level,moderate
+hypertension,,true/false,Existing diagnosis of hypertension,false
+diabetes_history,,true/false,Existing diagnosis of diabetes,false
+heart_disease_history,,true/false,Existing diagnosis of heart disease,false
+kidney_disease_history,,true/false,Existing kidney disease,false
+liver_disease_history,,true/false,Existing liver disease,false
+previous_stroke,,true/false,Previous stroke or TIA,false
+family_history_diabetes,,true/false,Family history of diabetes,false
+family_history_heart_disease,,true/false,Family history of heart disease,false
+family_history_kidney_disease,,true/false,Family history of kidney disease,false
+family_history_liver_disease,,true/false,Family history of liver disease,false
+family_history_stroke,,true/false,Family history of stroke,false
+systolic_bp,,mmHg,Systolic blood pressure,120
+diastolic_bp,,mmHg,Diastolic blood pressure,80
+heart_rate,,bpm,Resting heart rate,72
+fasting_glucose,,mg/dL,Fasting blood glucose,95
+random_glucose,,mg/dL,Random blood glucose,120
+hba1c,,%,Glycated haemoglobin (HbA1c),5.4
+insulin,,uU/mL,Serum insulin,8.5
+total_cholesterol,,mg/dL,Total cholesterol,190
+hdl,,mg/dL,HDL cholesterol,55
+ldl,,mg/dL,LDL cholesterol,110
+triglycerides,,mg/dL,Triglycerides,130
+creatinine,,mg/dL,Serum creatinine,0.9
+egfr,,mL/min/1.73m2,Estimated GFR,95
+bun,,mg/dL,Blood urea nitrogen (BUN),14
+uacr,,mg/g,Urine albumin-to-creatinine ratio,10
+urine_protein,,mg/dL,Urine protein,0
+sodium,,mEq/L,Serum sodium,140
+potassium,,mEq/L,Serum potassium,4.0
+alt,,U/L,Alanine aminotransferase (ALT),25
+ast,,U/L,Aspartate aminotransferase (AST),22
+alp,,U/L,Alkaline phosphatase (ALP),80
+total_bilirubin,,mg/dL,Total bilirubin,0.8
+direct_bilirubin,,mg/dL,Direct bilirubin,0.2
+albumin,,g/dL,Serum albumin,4.2
+total_protein,,g/dL,Total serum protein,7.2
+hemoglobin,,g/dL,Hemoglobin,14
+hematocrit,,%,Hematocrit,42
+wbc,,10^3/uL,White blood cell count,7.0

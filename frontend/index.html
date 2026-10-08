@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TwinHealth AI — Disease Detection</title>
+  <meta name="description" content="TwinHealth AI Phase 1: Upload your clinical data and receive AI-powered risk estimates for Diabetes, Heart Disease, CKD, Liver Disease, and Stroke." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+  <!-- SheetJS for client-side CSV/Excel parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="/static/style.css?v=2026.2" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- ── Header ─────────────────────────────────────────────────────── -->
+    <header id="app-header">
+      <div class="header-brand">
+        <div class="brand-mark">
+          <span class="brand-cross">✚</span>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">TwinHealth <span class="brand-ai">AI</span></span>
+          <span class="brand-phase">Phase 1 · Detection</span>
+        </div>
+      </div>
+      <div class="header-right" id="header-right">
+        <button class="btn-toggle-history" id="btn-toggle-history" title="Toggle History">
+          🕒 History
+        </button>
+        <span class="header-badge" id="provider-badge"></span>
+      </div>
+    </header>
+
+    <!-- ── Main Workspace Layout ──────────────────────────────────────── -->
+    <div class="main-layout">
+      <!-- ── Left Sidebar: History ── -->
+      <aside class="history-sidebar" id="history-sidebar">
+        <div class="history-header">
+          <span class="history-title">Assessment History</span>
+          <button class="btn-clear-history" id="btn-clear-history" title="Clear all history">🗑 Clear</button>
+        </div>
+        <div class="history-list" id="history-list">
+          <div class="history-empty">No previous assessments</div>
+        </div>
+      </aside>
+
+      <!-- ── Right Content Area ── -->
+      <div class="content-area">
+        <!-- ── Screen: Input ──────────────────────────────────────────────── -->
+        <div id="screen-input" class="screen active">
+
+      <div class="input-hero">
+        <h1 class="hero-title">Multi-Disease Risk Detection</h1>
+        <p class="hero-sub">Enter available patient data. Models run only when sufficient data is present — no fake values substituted.</p>
+      </div>
+
+      <!-- Mode tabs -->
+      <div class="mode-tabs" id="mode-tabs">
+        <button class="mode-tab active" id="tab-basic" data-mode="basic">
+          <span class="tab-icon">👤</span>
+          <span class="tab-label">Basic Check</span>
+          <span class="tab-desc">Level 1 — Demographic &amp; lifestyle data</span>
+        </button>
+        <button class="mode-tab" id="tab-advanced" data-mode="advanced">
+          <span class="tab-icon">🔬</span>
+          <span class="tab-label">Advanced Check</span>
+          <span class="tab-desc">All levels — Full clinical data</span>
+        </button>
+      </div>
+
+      <!-- Input method toggle -->
+      <div class="input-method-bar">
+        <div class="method-toggle">
+          <button class="method-btn active" id="btn-method-form" data-method="form">
+            📋 Fill Form
+          </button>
+          <button class="method-btn" id="btn-method-upload" data-method="upload">
+            📁 Upload CSV / Excel
+          </button>
+        </div>
+        <div style="display:flex; gap: 8px;">
+          <a href="/static/clinical-form.html" target="_blank" class="btn-download-template" id="btn-download-form" style="text-decoration:none; display:flex; align-items:center;">
+            📄 Download Clinical Form (PDF)
+          </a>
+          <button class="btn-download-template" id="btn-download-template">
+            ↓ Download Template
+          </button>
+        </div>
+      </div>
+
+      <!-- Upload zone (hidden until upload mode selected) -->
+      <div id="upload-zone" class="upload-zone hidden">
+        <div class="upload-inner" id="upload-inner">
+          <div class="upload-icon">📂</div>
+          <div class="upload-title">Drop your CSV or Excel file here</div>
+          <div class="upload-sub">or <label class="upload-browse" for="file-input">browse files</label></div>
+          <div class="upload-formats">Supports: .csv  .xlsx  .xls</div>
+          <input type="file" id="file-input" accept=".csv,.xlsx,.xls" hidden />
+        </div>
+        <div id="upload-success" class="upload-success hidden">
+          <span class="upload-check">✓</span>
+          <span id="upload-filename"></span>
+          <button class="btn-upload-clear" id="btn-upload-clear">✕ Clear</button>
+        </div>
+      </div>
+
+      <!-- Form container -->
+      <div id="form-container"></div>
+
+      <!-- Submit bar -->
+      <div class="submit-bar" style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; align-items:center; gap: 16px;">
+          <div class="submit-info" id="submit-info">
+            <span id="fields-filled-count">0</span> fields filled
+          </div>
+          <div class="engine-toggle">
+            <label for="engine-select" class="engine-label">Engine:</label>
+            <select id="engine-select" class="engine-select">
+              <option value="local" selected>Local ML (Fast)</option>
+              <option value="gemini">Gemini AI (Flexible)</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-analyze" id="btn-analyze">
+          ▶&nbsp; Run Detection
+        </button>
+      </div>
+
+    </div><!-- /#screen-input -->
+
+    <!-- ── Screen: Loading ────────────────────────────────────────────── -->
+    <div id="screen-loading" class="screen">
+      <div class="loading-content">
+        <div class="loading-spinner-ring"></div>
+        <div class="loading-spinner-ring ring-2"></div>
+        <h2 class="loading-title">Analysing Patient Data</h2>
+        <p class="loading-sub" id="loading-sub">Running disease models…</p>
+      </div>
+      <div class="loading-disease-grid" id="loading-disease-grid"></div>
+    </div>
+
+    <!-- ── Screen: Results ────────────────────────────────────────────── -->
+    <div id="screen-results" class="screen">
+
+      <div class="results-topbar">
+        <div class="results-topbar-left">
+          <h1 class="results-heading">Detection Results</h1>
+          <p class="results-ts" id="results-ts"></p>
+        </div>
+        <div class="results-topbar-right" style="display:flex; gap:8px;">
+          <a href="https://www.google.com/maps/search/clinics+and+diagnostic+centers+near+me" target="_blank" class="btn btn-secondary" id="btn-find-doctor" style="text-decoration:none; display:flex; align-items:center;">
+            📍 Find Doctor / Lab
+          </a>
+          <button class="btn btn-secondary" id="btn-print-referral">🖨 Print Referral Form</button>
+          <button class="btn btn-secondary" id="btn-new">← New Assessment</button>
+        </div>
+      </div>
+
+      <div class="results-layout">
+
+        <!-- Patient summary sidebar -->
+        <aside class="patient-sidebar" id="patient-sidebar">
+          <div class="sidebar-title">Patient Summary</div>
+          <div id="patient-summary-content"></div>
+        </aside>
+
+        <!-- Disease cards -->
+        <main class="results-main">
+          <div class="disease-grid" id="disease-grid"></div>
+
+          <!-- Priority actions -->
+          <div class="priority-box hidden" id="priority-box">
+            <div class="priority-title">⚡ Priority Actions</div>
+            <ol class="priority-list" id="priority-list"></ol>
+          </div>
+
+          <p class="results-disclaimer" id="results-disclaimer"></p>
+        </main>
+
+      </div>
+    </div><!-- /#screen-results -->
+
+    <!-- ── Screen 4: Care Plan & Lifestyle Protocol ───────────────── -->
+    <div id="screen-plan" class="screen">
+      <!-- Rendered dynamically by plan.js -->
+    </div><!-- /#screen-plan -->
+
+      </div><!-- /.content-area -->
+    </div><!-- /.main-layout -->
+
+    <!-- ── Detail panel (slide-in) ───────────────────────────────────── -->
+    <div id="detail-overlay" class="detail-overlay hidden" role="dialog" aria-modal="true">
+      <div class="detail-panel" id="detail-panel">
+        <button class="detail-close" id="detail-close" aria-label="Close">✕</button>
+        <div id="detail-content"></div>
+      </div>
+    </div>
+
+  </div><!-- /#app -->
+
+  <script src="/static/form.js?v=2026.5"></script>
+  <script src="/static/results.js?v=2026.5"></script>
+  <script src="/static/plan.js?v=2026.5"></script>
+  <script src="/static/app.js?v=2026.5"></script>
+</body>
+</html>

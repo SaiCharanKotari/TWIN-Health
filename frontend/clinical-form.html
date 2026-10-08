@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TwinHealth AI — Clinical Laboratory Requisition Form</title>
+  <style>
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+      background-color: #fff;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 3px solid #000;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+    }
+    .brand-icon {
+      font-size: 28px;
+      margin-right: 10px;
+    }
+    .brand-text h1 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: -0.5px;
+    }
+    .brand-text p {
+      margin: 0;
+      font-size: 12px;
+      color: #666;
+    }
+    .form-meta {
+      text-align: right;
+      font-size: 12px;
+    }
+    .section {
+      margin-bottom: 20px;
+    }
+    .section-title {
+      background-color: #f0f0f0;
+      padding: 5px 10px;
+      font-weight: bold;
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      font-size: 14px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      font-size: 13px;
+    }
+    .fill-box {
+      background-color: #fcfcfc;
+      min-width: 120px;
+    }
+    .checkbox {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border: 1px solid #000;
+      margin-right: 5px;
+      vertical-align: middle;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 15px;
+    }
+    .signature-area {
+      margin-top: 40px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .sig-line {
+      width: 250px;
+      border-top: 1px solid #000;
+      text-align: center;
+      font-size: 12px;
+      padding-top: 5px;
+    }
+    .instructions {
+      font-size: 11px;
+      color: #555;
+      margin-bottom: 15px;
+      font-style: italic;
+    }
+    
+    /* Print optimizations */
+    @media print {
+      body {
+        padding: 0;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+    
+    .print-btn-container {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .btn-print {
+      background-color: #0ea5e9;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .btn-print:hover {
+      background-color: #0284c7;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="print-btn-container no-print">
+    <button class="btn-print" onclick="window.print()">🖨 Print / Save as PDF</button>
+    <p style="font-size: 12px; color: #666; margin-top: 5px;">This button will not appear on the printed document.</p>
+  </div>
+
+  <div class="header">
+    <div class="brand">
+      <div class="brand-icon">✚</div>
+      <div class="brand-text">
+        <h1>TwinHealth AI</h1>
+        <p>Comprehensive Clinical Assessment Requisition</p>
+      </div>
+    </div>
+    <div class="form-meta">
+      <strong>Form ID:</strong> TH-REQ-001<br>
+      <strong>Date:</strong> ___ / ___ / 20__
+    </div>
+  </div>
+
+  <div class="instructions">
+    Instructions for Provider/Laboratory: Please complete the following clinical data required for the TwinHealth AI Multi-Disease Risk Assessment (evaluating Diabetes, Heart Disease, CKD, Liver Disease, and Stroke risk).
+  </div>
+
+  <!-- PATIENT INFORMATION -->
+  <div class="section">
+    <div class="section-title">1. Patient Information</div>
+    <table>
+      <tr>
+        <td style="width: 15%;"><strong>Patient Name:</strong></td>
+        <td class="fill-box" style="width: 35%;"></td>
+        <td style="width: 15%;"><strong>DOB / Age:</strong></td>
+        <td class="fill-box" style="width: 35%;"></td>
+      </tr>
+      <tr>
+        <td><strong>Sex:</strong></td>
+        <td class="fill-box">
+          <span class="checkbox"></span> Male &nbsp;&nbsp;
+          <span class="checkbox"></span> Female &nbsp;&nbsp;
+          <span class="checkbox"></span> Other
+        </td>
+        <td><strong>Patient ID:</strong></td>
+        <td class="fill-box"></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="grid-2">
+    <!-- CLINICAL VITALS -->
+    <div class="section">
+      <div class="section-title">2. Clinical Vitals (Level 2)</div>
+      <table>
+        <tr><td>Height (cm)</td><td class="fill-box"></td></tr>
+        <tr><td>Weight (kg)</td><td class="fill-box"></td></tr>
+        <tr><td>Systolic BP (mmHg)</td><td class="fill-box"></td></tr>
+        <tr><td>Diastolic BP (mmHg)</td><td class="fill-box"></td></tr>
+        <tr><td>Resting Heart Rate (bpm)</td><td class="fill-box"></td></tr>
+      </table>
+    </div>
+
+    <!-- BLOOD SUGAR PANEL -->
+    <div class="section">
+      <div class="section-title">3. Blood Sugar Panel (Level 2)</div>
+      <table>
+        <tr><td>Fasting Blood Glucose (mg/dL)</td><td class="fill-box"></td></tr>
+        <tr><td>Random Blood Glucose (mg/dL)</td><td class="fill-box"></td></tr>
+        <tr><td>HbA1c (%)</td><td class="fill-box"></td></tr>
+        <tr><td>Serum Insulin (μU/mL)</td><td class="fill-box"></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- LIPID PANEL -->
+    <div class="section">
+      <div class="section-title">4. Lipid Panel (Level 2)</div>
+      <table>
+        <tr><td>Total Cholesterol (mg/dL)</td><td class="fill-box"></td></tr>
+        <tr><td>HDL Cholesterol (mg/dL)</td><td class="fill-box"></td></tr>
+        <tr><td>LDL Cholesterol (mg/dL)</td><td class="fill-box"></td></tr>
+        <tr><td>Triglycerides (mg/dL)</td><td class="fill-box"></td></tr>
+      </table>
+    </div>
+
+    <!-- KIDNEY FUNCTION -->
+    <div class="section">
+      <div class="section-title">5. Kidney Function (Level 3)</div>
+      <table>
+        <tr><td>Serum Creatinine (mg/dL)</td><td class="fill-box"></td></tr>
+        <tr><td>eGFR (mL/min/1.73m²)</td><td class="fill-box"></td></tr>
+        <tr><td>BUN / Urea (mg/dL)</td><td class="fill-box"></td></tr>
+        <tr><td>UACR (mg/g)</td><td class="fill-box"></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- LIVER FUNCTION -->
+    <div class="section">
+      <div class="section-title">6. Liver Function (Level 3)</div>
+      <table>
+        <tr><td>ALT / SGPT (U/L)</td><td class="fill-box"></td></tr>
+        <tr><td>AST / SGOT (U/L)</td><td class="fill-box"></td></tr>
+        <tr><td>Alkaline Phosphatase (U/L)</td><td class="fill-box"></td></tr>
+        <tr><td>Total Bilirubin (mg/dL)</td><td class="fill-box"></td></tr>
+        <tr><td>Albumin (g/dL)</td><td class="fill-box"></td></tr>
+      </table>
+    </div>
+
+    <!-- GENERAL / CBC -->
+    <div class="section">
+      <div class="section-title">7. General Blood Tests / CBC (Level 3)</div>
+      <table>
+        <tr><td>Hemoglobin (g/dL)</td><td class="fill-box"></td></tr>
+        <tr><td>Hematocrit (%)</td><td class="fill-box"></td></tr>
+        <tr><td>WBC Count (10³/µL)</td><td class="fill-box"></td></tr>
+        <tr><td>Sodium (mEq/L)</td><td class="fill-box"></td></tr>
+        <tr><td>Potassium (mEq/L)</td><td class="fill-box"></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="signature-area">
+    <div class="sig-line">
+      Requesting Physician Signature / Stamp
+    </div>
+    <div class="sig-line">
+      Date
+    </div>
+  </div>
+
+  <script>
+    // Optional: automatically trigger print dialog after a brief delay
+    // so styles have a moment to fully render
+    window.onload = function() {
+      setTimeout(function() {
+        window.print();
+      }, 500);
+    };
+  </script>
+</body>
+</html>

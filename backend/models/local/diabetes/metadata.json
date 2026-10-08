@@ -1,0 +1,42 @@
+{
+  "disease": "diabetes",
+  "selected_algorithm": "extra_trees",
+  "features": [
+    "pregnancies",
+    "glucose",
+    "blood_pressure",
+    "skin_thickness",
+    "insulin",
+    "bmi",
+    "diabetes_pedigree_function",
+    "age"
+  ],
+  "numerical_features": [
+    "pregnancies",
+    "glucose",
+    "blood_pressure",
+    "skin_thickness",
+    "insulin",
+    "bmi",
+    "diabetes_pedigree_function",
+    "age"
+  ],
+  "categorical_features": [],
+  "cv_metrics": {
+    "roc_auc": 0.8471,
+    "f1_macro": 0.7601,
+    "recall": 0.7522,
+    "precision": 0.6567,
+    "balanced_accuracy": 0.7698
+  },
+  "test_metrics": {
+    "roc_auc": 0.8191,
+    "recall": 0.7593,
+    "precision": 0.6119,
+    "f1_positive": 0.6777,
+    "f1_macro": 0.7346,
+    "balanced_accuracy": 0.7496,
+    "accuracy": 0.7468,
+    "brier_score": 0.1803
+  }
+}

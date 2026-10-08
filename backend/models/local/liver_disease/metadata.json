@@ -1,0 +1,47 @@
+{
+  "disease": "liver_disease",
+  "selected_algorithm": "gradient_boosting",
+  "features": [
+    "age",
+    "gender",
+    "total_bilirubin",
+    "direct_bilirubin",
+    "alkaline_phosphotase",
+    "alamine_aminotransferase",
+    "aspartate_aminotransferase",
+    "total_proteins",
+    "albumin",
+    "albumin_and_globulin_ratio"
+  ],
+  "numerical_features": [
+    "age",
+    "total_bilirubin",
+    "direct_bilirubin",
+    "alkaline_phosphotase",
+    "alamine_aminotransferase",
+    "aspartate_aminotransferase",
+    "total_proteins",
+    "albumin",
+    "albumin_and_globulin_ratio"
+  ],
+  "categorical_features": [
+    "gender"
+  ],
+  "cv_metrics": {
+    "roc_auc": 0.7074,
+    "f1_macro": 0.6039,
+    "recall": 0.8648,
+    "precision": 0.764,
+    "balanced_accuracy": 0.5982
+  },
+  "test_metrics": {
+    "roc_auc": 0.7636,
+    "recall": 0.8916,
+    "precision": 0.7255,
+    "f1_positive": 0.8,
+    "f1_macro": 0.5224,
+    "balanced_accuracy": 0.534,
+    "accuracy": 0.6838,
+    "brier_score": 0.1886
+  }
+}

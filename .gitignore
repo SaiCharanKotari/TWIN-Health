@@ -1,0 +1,38 @@
+# Environment & Secrets
+.env
+.env.local
+*.env
+
+# Python Cache & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+venv/
+.venv/
+env/
+ENV/
+
+# Large Presentation Binaries & Rendered Slides
+*.pptx
+*.ppt
+slide_images/
+presentation_assets/
+.codex_ppt_build/
+TwinHealth_AI_CKD_Rubric_Review/
+*.inspect.ndjson
+
+# Large External ML Model Files (Can be re-downloaded via backend/scripts/download_local_models.py)
+backend/models/local/stroke/model.joblib
+backend/models/local/liver_disease/skops-xwel2v4p.pkl
+backend/models/local/*/*.pkl
+backend/models/local/heart_disease/model.joblib
+
+# OS & Editor Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,2197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TwinHealth AI - Final Year Project Presentation</title>
+  <link rel="preconnect" href="https://images.unsplash.com" />
+  <link rel="preconnect" href="https://images.pexels.com" />
+  <style>
+    :root {
+      --ink: #17202a;
+      --muted: #5b6778;
+      --paper: #f7fafc;
+      --panel: rgba(255, 255, 255, 0.9);
+      --line: rgba(23, 32, 42, 0.12);
+      --teal: #0f766e;
+      --blue: #2563eb;
+      --green: #16a34a;
+      --amber: #d97706;
+      --rose: #e11d48;
+      --violet: #7c3aed;
+      --shadow: 0 24px 70px rgba(15, 23, 42, 0.18);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: #08111f;
+    }
+
+    body {
+      overflow: hidden;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .deck {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 20px;
+      padding: clamp(22px, 3vw, 42px);
+      opacity: 0;
+      transform: translateX(24px) scale(0.985);
+      pointer-events: none;
+      transition: opacity 360ms ease, transform 360ms ease;
+      background:
+        linear-gradient(115deg, rgba(247, 250, 252, 0.95), rgba(235, 245, 255, 0.78)),
+        var(--bg) center / cover no-repeat;
+    }
+
+    .slide.active {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .slide.dark {
+      color: #f8fafc;
+      background:
+        linear-gradient(115deg, rgba(5, 12, 24, 0.86), rgba(13, 55, 78, 0.72)),
+        var(--bg) center / cover no-repeat;
+    }
+
+    .slide.dark .eyebrow,
+    .slide.dark .muted,
+    .slide.dark .footnote {
+      color: rgba(248, 250, 252, 0.78);
+    }
+
+    .slide.dark .card,
+    .slide.dark .panel,
+    .slide.dark .metric,
+    .slide.dark .route {
+      color: #17202a;
+    }
+
+    .slide.dark .panel .muted {
+      color: #111827;
+    }
+
+    .topbar,
+    .bottombar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .mark {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      color: white;
+      background: linear-gradient(135deg, var(--teal), var(--blue));
+      box-shadow: 0 10px 30px rgba(37, 99, 235, 0.22);
+      flex: 0 0 auto;
+    }
+
+    .brand strong {
+      font-size: 0.95rem;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 34px;
+      padding: 7px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.34);
+      border-radius: 999px;
+      color: inherit;
+      background: rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(12px);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .content {
+      display: grid;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+      min-height: 0;
+    }
+
+    .two-col {
+      grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+      gap: clamp(24px, 4vw, 52px);
+    }
+
+    .wide {
+      max-width: 1180px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .narrow {
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--teal);
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      max-width: 960px;
+      margin-bottom: 20px;
+      font-size: clamp(3.2rem, 8vw, 7.8rem);
+      line-height: 0.92;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin-bottom: 18px;
+      font-size: clamp(2.1rem, 5vw, 4.7rem);
+      line-height: 0.98;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin-bottom: 10px;
+      font-size: clamp(1.05rem, 1.7vw, 1.35rem);
+      line-height: 1.2;
+    }
+
+    .lead {
+      max-width: 760px;
+      color: var(--muted);
+      font-size: clamp(1.05rem, 1.8vw, 1.38rem);
+      line-height: 1.55;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .panel,
+    .card,
+    .metric,
+    .route {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .panel {
+      padding: clamp(20px, 3vw, 32px);
+      border-radius: 8px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid.cols-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid.cols-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .grid.cols-5 {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .card {
+      min-height: 136px;
+      padding: 18px;
+      border-radius: 8px;
+    }
+
+    .card .icon {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 14px;
+      border-radius: 8px;
+      color: #fff;
+      background: var(--accent, var(--blue));
+    }
+
+    .card p {
+      margin-bottom: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .tag {
+      padding: 8px 11px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: #263447;
+      background: rgba(255, 255, 255, 0.74);
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    .team-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 18px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      backdrop-filter: blur(12px);
+      color: #f8fafc;
+      font-size: 0.95rem;
+    }
+
+    .team-badge strong {
+      color: #38bdf8;
+      font-size: 0.84rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+
+    .team-members {
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    .hero-visual {
+      min-height: 460px;
+      overflow: hidden;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      background: rgba(255, 255, 255, 0.2);
+      position: relative;
+    }
+
+    .hero-visual img {
+      width: 100%;
+      height: 100%;
+      min-height: 460px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .hero-visual .overlay-card {
+      position: absolute;
+      left: 22px;
+      right: 22px;
+      bottom: 22px;
+      padding: 16px;
+      border-radius: 8px;
+      color: #17202a;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 16px 48px rgba(15, 23, 42, 0.18);
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 24px;
+    }
+
+    .metric {
+      padding: 18px;
+      border-radius: 8px;
+    }
+
+    .metric strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--accent, var(--blue));
+      font-size: clamp(1.6rem, 3vw, 2.5rem);
+      line-height: 1;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(110px, 1fr));
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .flow-node {
+      position: relative;
+      min-height: 104px;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      text-align: center;
+      font-weight: 800;
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: 0 14px 34px rgba(15, 23, 42, 0.1);
+    }
+
+    .flow-node:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -15px;
+      width: 16px;
+      height: 2px;
+      background: rgba(23, 32, 42, 0.3);
+    }
+
+    .model-fan {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 15px;
+    }
+
+    .fan-row {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .model {
+      min-height: 118px;
+      padding: 16px 12px;
+      border-radius: 8px;
+      color: #fff;
+      background: var(--accent);
+      box-shadow: 0 18px 44px rgba(15, 23, 42, 0.18);
+    }
+
+    .model strong {
+      display: block;
+      font-size: 1.02rem;
+      line-height: 1.2;
+    }
+
+    .model span {
+      display: block;
+      margin-top: 10px;
+      color: rgba(255, 255, 255, 0.84);
+      font-size: 0.82rem;
+      line-height: 1.35;
+    }
+
+    .risk-card {
+      display: grid;
+      gap: 18px;
+      padding: 22px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: var(--shadow);
+    }
+
+    .risk-line {
+      display: grid;
+      grid-template-columns: 150px 1fr 62px;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .bar {
+      height: 13px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e5e7eb;
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      width: var(--value);
+      border-radius: inherit;
+      background: var(--accent);
+    }
+
+    .language-compare {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .wrong,
+    .right {
+      padding: 24px;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .wrong {
+      border: 1px solid rgba(225, 29, 72, 0.25);
+      background: rgba(255, 241, 242, 0.92);
+    }
+
+    .right {
+      border: 1px solid rgba(22, 163, 74, 0.25);
+      background: rgba(240, 253, 244, 0.94);
+    }
+
+    .statement {
+      margin: 18px 0 0;
+      font-size: clamp(1.45rem, 3vw, 2.45rem);
+      line-height: 1.1;
+      font-weight: 850;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: var(--shadow);
+    }
+
+    .table th,
+    .table td {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .table th {
+      color: #fff;
+      background: #12314b;
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .route-map {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 15px;
+    }
+
+    .route {
+      min-height: 154px;
+      padding: 18px;
+      border-radius: 8px;
+      position: relative;
+    }
+
+    .route::before {
+      content: attr(data-step);
+      display: inline-grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      margin-bottom: 16px;
+      border-radius: 8px;
+      color: white;
+      background: var(--accent, var(--blue));
+      font-weight: 900;
+    }
+
+    .route p {
+      margin-bottom: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .tech-stack {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .stack-item {
+      padding: 20px;
+      border-left: 5px solid var(--accent);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: 0 14px 36px rgba(15, 23, 42, 0.12);
+    }
+
+    .stack-item p {
+      margin-bottom: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .endpoint-list {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .endpoint {
+      display: grid;
+      grid-template-columns: 170px 1fr;
+      gap: 14px;
+      align-items: center;
+      padding: 14px 16px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.1);
+    }
+
+    .reference-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px 18px;
+      margin: 0;
+      padding-left: 20px;
+      font-size: clamp(0.62rem, 0.9vw, 0.82rem);
+      line-height: 1.32;
+    }
+
+    .reference-list li {
+      margin: 0;
+      padding-left: 4px;
+      break-inside: avoid;
+    }
+
+    .reference-list a {
+      color: #174ea6;
+      overflow-wrap: anywhere;
+    }
+
+    .slide.dark .reference-list a {
+      color: #bfdbfe;
+    }
+
+    .compact-panel {
+      max-height: 68vh;
+      overflow: auto;
+    }
+
+    .reference-list.all-refs {
+      font-size: clamp(0.43rem, 0.62vw, 0.58rem);
+      line-height: 1.18;
+      gap: 6px 16px;
+    }
+
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .diagram-frame {
+      background: rgba(255, 255, 255, 0.98);
+      border: 1px solid rgba(15, 23, 42, 0.14);
+      border-radius: 10px;
+      padding: 14px;
+      box-shadow: 0 18px 46px rgba(15, 23, 42, 0.16);
+      max-height: 60vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      cursor: zoom-in;
+      transition: transform 0.22s ease, box-shadow 0.22s ease;
+    }
+
+    .diagram-frame:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+    }
+
+    .diagram-frame .zoom-hint {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 5px 12px;
+      font-size: 0.76rem;
+      font-weight: 750;
+      color: #0f172a;
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(15, 23, 42, 0.15);
+      border-radius: 999px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .diagram-frame img {
+      width: 100%;
+      height: auto;
+      max-height: 54vh;
+      object-fit: contain;
+      display: block;
+    }
+
+    /* ── Full size interactive modal ── */
+    .diagram-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: #08111f;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(16px, 3vw, 36px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      cursor: zoom-out;
+    }
+
+    .diagram-modal.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .diagram-modal-content {
+      position: relative;
+      max-width: 96vw;
+      max-height: 92vh;
+      background: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 32px 100px rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: default;
+    }
+
+    .diagram-modal img {
+      width: auto;
+      height: auto;
+      max-width: 92vw;
+      max-height: 84vh;
+      object-fit: contain;
+      border-radius: 6px;
+      display: block;
+    }
+
+    .diagram-modal .modal-close {
+      position: absolute;
+      top: -16px;
+      right: -16px;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 2px solid #ffffff;
+      background: #0f172a;
+      color: #ffffff;
+      font-size: 1.25rem;
+      line-height: 1;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+      transition: transform 0.18s ease, background 0.18s ease;
+    }
+
+    .diagram-modal .modal-close:hover {
+      transform: scale(1.1);
+      background: #e11d48;
+    }
+
+    .image-tile {
+      min-height: 280px;
+      overflow: hidden;
+      position: relative;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      background: #dbeafe;
+    }
+
+    .image-tile img {
+      width: 100%;
+      height: 100%;
+      min-height: 280px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .image-tile figcaption {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      color: #17202a;
+      background: rgba(255, 255, 255, 0.9);
+      font-size: 0.9rem;
+      line-height: 1.35;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+    }
+
+    code {
+      padding: 4px 7px;
+      border-radius: 6px;
+      color: #0f172a;
+      background: #eaf2ff;
+      font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+      font-size: 0.9em;
+    }
+
+    .footer-text,
+    .slide-count {
+      color: rgba(23, 32, 42, 0.62);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .slide.dark .footer-text,
+    .slide.dark .slide-count {
+      color: rgba(248, 250, 252, 0.72);
+    }
+
+    .controls {
+      position: fixed;
+      right: 24px;
+      bottom: 22px;
+      z-index: 10;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 999px;
+      background: rgba(8, 17, 31, 0.62);
+      box-shadow: 0 18px 52px rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(14px);
+    }
+
+    .control-btn {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 999px;
+      color: #fff;
+      background: rgba(255, 255, 255, 0.14);
+      cursor: pointer;
+    }
+
+    .control-btn:hover {
+      background: rgba(255, 255, 255, 0.24);
+    }
+
+    .progress {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 11;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    .progress span {
+      display: block;
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, var(--teal), var(--blue), var(--green));
+      transition: width 260ms ease;
+    }
+
+    .print-hint {
+      position: fixed;
+      left: 24px;
+      bottom: 22px;
+      z-index: 10;
+      padding: 11px 14px;
+      border-radius: 999px;
+      color: #fff;
+      background: rgba(8, 17, 31, 0.62);
+      backdrop-filter: blur(14px);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .diagram-caption {
+      margin: 20px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .footnote {
+      margin-top: 20px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 980px) {
+      body {
+        overflow: auto;
+      }
+
+      .deck {
+        height: auto;
+        min-height: 100vh;
+      }
+
+      .slide {
+        position: relative;
+        min-height: 100vh;
+        display: none;
+        padding: 22px;
+      }
+
+      .slide.active {
+        display: grid;
+      }
+
+      .two-col,
+      .grid.cols-2,
+      .grid.cols-3,
+      .grid.cols-5,
+      .fan-row,
+      .metrics,
+      .route-map,
+      .tech-stack,
+      .flow,
+      .image-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .flow-node:not(:last-child)::after {
+        display: none;
+      }
+
+      .hero-visual,
+      .hero-visual img {
+        min-height: 290px;
+      }
+
+      .risk-line {
+        grid-template-columns: 1fr;
+      }
+
+      .language-compare {
+        grid-template-columns: 1fr;
+      }
+
+      .endpoint {
+        grid-template-columns: 1fr;
+      }
+
+      .print-hint {
+        display: none;
+      }
+    }
+
+    @media print {
+      body {
+        overflow: visible;
+        background: #fff;
+      }
+
+      .deck {
+        height: auto;
+        overflow: visible;
+      }
+
+      .slide,
+      .slide.active {
+        position: relative;
+        display: grid;
+        opacity: 1;
+        transform: none;
+        min-height: 100vh;
+        page-break-after: always;
+      }
+
+      .controls,
+      .progress,
+      .print-hint {
+        display: none;
+      }
+    }
+  
+        /* ── Review 3 Specific Styles ── */
+    .r3-grid-two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: stretch;
+      height: 100%;
+    }
+    @media (max-width: 980px) {
+      .r3-grid-two {
+        grid-template-columns: 1fr;
+      }
+    }
+    .r3-report-card {
+      background: #070d19;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.35);
+      position: relative;
+      min-height: 0;
+    }
+    .r3-report-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      padding: 5px 10px;
+      background: rgba(15, 23, 42, 0.85);
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .r3-report-badge {
+      font-size: 11px;
+      font-weight: 800;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .r3-zoom-hint {
+      font-size: 10.5px;
+      color: #94a3b8;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: color 0.15s ease;
+    }
+    .r3-zoom-hint:hover {
+      color: #38bdf8;
+    }
+    .zoomable-img-wrap {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      border-radius: 6px;
+      border: 1px solid #334155;
+      background: #020617;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      cursor: crosshair;
+      user-select: none;
+      touch-action: none;
+      min-height: 0;
+    }
+    .zoom-img-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      transition: transform 0.12s ease-out;
+      transform-origin: center top;
+      will-change: transform;
+    }
+    .zoom-img-container img {
+      max-width: 100%;
+      max-height: 56vh;
+      object-fit: contain;
+      object-position: top;
+      display: block;
+      pointer-events: none;
+    }
+    .zoom-controls {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 6px;
+      padding: 3px 6px;
+      z-index: 10;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    }
+    .zoom-indicator {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #38bdf8;
+      padding: 0 4px;
+      min-width: 36px;
+      text-align: center;
+    }
+    .zoom-btn {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      color: #f8fafc;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0;
+      transition: all 0.15s ease;
+    }
+    .zoom-btn:hover {
+      background: rgba(56, 189, 248, 0.35);
+      border-color: #38bdf8;
+      color: #38bdf8;
+    }
+    .zoom-lens-tip {
+      position: absolute;
+      bottom: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      padding: 2px 10px;
+      font-size: 9.5px;
+      color: #94a3b8;
+      pointer-events: none;
+      z-index: 9;
+      opacity: 0.8;
+      transition: opacity 0.2s ease;
+      white-space: nowrap;
+    }
+    .zoomable-img-wrap:hover .zoom-lens-tip {
+      opacity: 1;
+    }
+    .zoomable-img-wrap.is-zoomed {
+      cursor: grab;
+    }
+    .zoomable-img-wrap.is-panning {
+      cursor: grabbing;
+    }
+    .r3-benchmark-card {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+      height: 100%;
+      overflow-y: auto;
+      color: #f8fafc;
+    }
+    .r3-gpt-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .r3-gpt-title {
+      font-size: 13px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #10b981;
+    }
+    .r3-concordance-pill {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 800;
+    }
+    .r3-verdict-box {
+      background: rgba(56, 189, 248, 0.08);
+      border-left: 3px solid #38bdf8;
+      border-radius: 4px;
+      padding: 8px 12px;
+      font-size: 11.5px;
+      line-height: 1.45;
+      color: #e2e8f0;
+    }
+    .r3-comp-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+    .r3-comp-table th {
+      background: #1e293b;
+      color: #94a3b8;
+      padding: 5px 8px;
+      text-align: left;
+      font-size: 10px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .r3-comp-table td {
+      padding: 5px 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      color: #f1f5f9;
+    }
+    .r3-comp-table tr:hover td {
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .r3-status-match {
+      color: #10b981;
+      font-weight: 800;
+    }
+    .r3-guidelines-box {
+      font-size: 10.5px;
+      color: #94a3b8;
+      line-height: 1.4;
+      padding: 6px 10px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 6px;
+      border: 1px dashed rgba(255, 255, 255, 0.12);
+    }
+    .r3-matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #0f172a;
+      border: 1px solid #334155;
+    }
+    .r3-matrix-table th {
+      background: #1e293b;
+      color: #38bdf8;
+      padding: 10px 12px;
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 800;
+      border-bottom: 2px solid #38bdf8;
+    }
+    .r3-matrix-table td {
+      padding: 9px 12px;
+      color: #f8fafc;
+      border-bottom: 1px solid #1e293b;
+    }
+    .r3-matrix-table tr:nth-child(even) td {
+      background: rgba(30, 41, 59, 0.35);
+    }
+    .r3-perf-badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-weight: 800;
+      font-size: 11px;
+    }
+    .r3-perf-badge.green { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid #10b981; }
+    .r3-perf-badge.blue { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid #38bdf8; }
+
+  </style>
+</head>
+<body>
+  <main class="deck" aria-live="polite">
+<section class="slide active dark" style="--bg: url('https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1800&q=85');">
+      <header class="topbar">
+        <div class="brand">
+          <div class="mark" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+              <path d="M6 6c4 3 8 3 12 0M6 18c4-3 8-3 12 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <strong>TwinHealth AI</strong>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <div class="team-badge" style="margin-top: 0; padding: 6px 14px; font-size: 0.88rem;" aria-label="Project Team Members">
+            <strong>Team:</strong>
+            <span class="team-members">Sai Charan (23BRS1009) &bull; Charu Datta (23BRS1266)</span>
+          </div>
+          <span class="pill">Final Year Project</span>
+        </div>
+      </header>
+      <div class="content wide two-col">
+        <div>
+          <p class="eyebrow">Predictive chronic disease detection</p>
+          <h1>TwinHealth AI</h1>
+          <p class="lead">A predictive system for early chronic disease detection with daily-habit guidance, explainable risk percentages, digital twin scenarios, and future health simulation.</p>
+          <div class="tag-row">
+            <span class="tag">Diabetes</span>
+            <span class="tag">Heart disease</span>
+            <span class="tag">CKD</span>
+            <span class="tag">Liver disease</span>
+            <span class="tag">Stroke</span>
+          </div>
+        </div>
+        <figure class="hero-visual" aria-label="Clinical AI dashboard image">
+          <img src="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?auto=format&fit=crop&w=1200&q=85" alt="Doctor using digital health technology" />
+          <figcaption class="overlay-card">
+            <strong>Core idea:</strong> Detection and automation are core components; the invention is the preprocessing, multi-disease architecture, digital twin, scenario engine, and simulation method.
+          </figcaption>
+        </figure>
+      </div>
+      <footer class="bottombar">
+        <span class="footer-text">Clinical decision support, not diagnosis</span>
+        <span class="slide-count"></span>
+      </footer>
+    </section>
+
+
+
+    <section class="slide dark" style="--bg: url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1800&q=85');">
+      <header class="topbar">
+        <div class="brand"><div class="mark">M1</div><strong>Criterion 1: Implementation</strong></div>
+        <span class="pill" style="color: #2dd4bf; border-color: #0f766e;">5 Marks Scope</span>
+      </header>
+      <div class="content wide">
+        <p class="eyebrow">Working modules representing approximately half of approved scope</p>
+        <h2 style="font-size: clamp(1.5rem, 2.5vw, 2rem); margin-bottom: 8px;">Completed Executable System Architecture</h2>
+        <p class="lead" style="font-size: 0.92rem; color: #94a3b8; margin-bottom: 16px;">All modules are fully implemented, verified via 33 automated tests, and running on local FastAPI backend:</p>
+        
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+          <div style="background: rgba(15, 23, 42, 0.88); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 18px;">
+            <div style="font-size: 20px; margin-bottom: 8px;">🧬</div>
+            <h4 style="font-size: 14px; font-weight: 800; color: #f8fafc; margin-bottom: 6px;">1. Universal Patient Adapter</h4>
+            <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin: 0;">Ingests 30+ biomarkers with mandatory gating thresholds. Normalizes clinical units (mg/dL, mmHg, g/dL) across 5 diseases without missing-field crashes.</p>
+          </div>
+
+          <div style="background: rgba(15, 23, 42, 0.88); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 18px;">
+            <div style="font-size: 20px; margin-bottom: 8px;">⚙️</div>
+            <h4 style="font-size: 14px; font-weight: 800; color: #f8fafc; margin-bottom: 6px;">2. Local ML Inference Engine</h4>
+            <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin: 0;">Self-contained scikit-learn pipelines with zero cloud latency. Runs local models in < 120 ms with strict zero-fallback to mock or third-party APIs.</p>
+          </div>
+
+          <div style="background: rgba(15, 23, 42, 0.88); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 18px;">
+            <div style="font-size: 20px; margin-bottom: 8px;">🩺</div>
+            <h4 style="font-size: 14px; font-weight: 800; color: #f8fafc; margin-bottom: 6px;">3. Clinician Review Workspace</h4>
+            <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin: 0;">Interactive Priority Actions workspace featuring physician commentary textarea, real-time <code>🔄 Re-verify</code> auditing, and <code>✓ Processed</code> sign-off gating.</p>
+          </div>
+
+          <div style="background: rgba(15, 23, 42, 0.88); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 18px;">
+            <div style="font-size: 20px; margin-bottom: 8px;">⏰</div>
+            <h4 style="font-size: 14px; font-weight: 800; color: #f8fafc; margin-bottom: 6px;">4. 24H Chronotherapy Care Plan</h4>
+            <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin: 0;">Dual-engine recommendation generator (Gemini + Local Clinical CDS) providing tailored nutrition, exercise protocols, vitamins, and hourly morning-to-night schedule.</p>
+          </div>
+
+          <div style="background: rgba(15, 23, 42, 0.88); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 18px;">
+            <div style="font-size: 20px; margin-bottom: 8px;">📄</div>
+            <h4 style="font-size: 14px; font-weight: 800; color: #f8fafc; margin-bottom: 6px;">5. Prescription Slip Ingestion & OCR</h4>
+            <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin: 0;">Prescription receipt upload dropzone with thumbnail preview, automated medicine dosage extraction, and interactive daily dose check-off tracking.</p>
+          </div>
+
+          <div style="background: rgba(15, 23, 42, 0.88); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 18px;">
+            <div style="font-size: 20px; margin-bottom: 8px;">📥</div>
+            <h4 style="font-size: 14px; font-weight: 800; color: #f8fafc; margin-bottom: 6px;">6. Clinical Export & Report Engine</h4>
+            <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin: 0;">High-definition canvas exporter generating comprehensive medical snapshot images (.PNG) with full biomarker tables, alongside printable hospital referral sheets.</p>
+          </div>
+        </div>
+      </div>
+      <footer class="bottombar"><span class="footer-text">Demonstrates executable modules attributable to the team</span><span class="slide-count"></span></footer>
+    </section>
+
+
+    <section class="slide dark" style="--bg: url('https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1800&q=85');">
+      <header class="topbar">
+        <div class="brand"><div class="mark">M2</div><strong>Criterion 2: Technical Accuracy</strong></div>
+        <span class="pill" style="color: #60a5fa; border-color: #2563eb;">5 Marks Scope</span>
+      </header>
+      <div class="content wide">
+        <p class="eyebrow">Algorithms, Parameters, Preprocessing & Calibration</p>
+        <h2 style="font-size: clamp(1.4rem, 2.3vw, 1.9rem); margin-bottom: 6px;">Machine Learning Models & Codebase Pipeline Architecture</h2>
+        <p class="lead" style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 14px;">Technically rigorous pipeline design incorporating Stratified 5-Fold Cross Validation, zero data leakage, and probability calibration:</p>
+        
+        <table class="r3-matrix-table">
+          <thead>
+            <tr>
+              <th>Chronic Disease</th>
+              <th>Deployed ML Algorithm</th>
+              <th>Key Parameters & Preprocessing</th>
+              <th>Validation Metric</th>
+              <th>Inference Latency</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong style="color:#f8fafc;">Type 2 Diabetes</strong></td>
+              <td><code>ExtraTreesClassifier</code></td>
+              <td>SimpleImputer(median) + RobustScaler(), n_estimators=100, min_samples_split=4</td>
+              <td><span class="r3-perf-badge green">ROC-AUC: 0.8191</span></td>
+              <td>118 ms</td>
+            </tr>
+            <tr>
+              <td><strong style="color:#f8fafc;">Heart Disease</strong></td>
+              <td><code>Balanced LogisticRegression</code></td>
+              <td>StandardScaler(), class_weight='balanced', L2 regularization (C=0.1)</td>
+              <td><span class="r3-perf-badge green">ROC-AUC: 0.8643</span></td>
+              <td>10 ms</td>
+            </tr>
+            <tr>
+              <td><strong style="color:#f8fafc;">Chronic Kidney Disease</strong></td>
+              <td><code>RandomForestClassifier</code></td>
+              <td>24 clinical features, Gini Impurity, max_depth=12, n_estimators=100</td>
+              <td><span class="r3-perf-badge green">ROC-AUC: 1.0000</span></td>
+              <td>22 ms</td>
+            </tr>
+            <tr>
+              <td><strong style="color:#f8fafc;">Liver Disease</strong></td>
+              <td><code>GradientBoostingClassifier</code></td>
+              <td>ILPD dataset, ALT/AST transaminase ratio, learning_rate=0.08, max_depth=4</td>
+              <td><span class="r3-perf-badge blue">ROC-AUC: 0.7636</span></td>
+              <td>5 ms</td>
+            </tr>
+            <tr>
+              <td><strong style="color:#f8fafc;">Stroke Risk</strong></td>
+              <td><code>Calibrated LogisticRegression</code></td>
+              <td>CalibratedClassifierCV(method='sigmoid'), SMOTE balancing for 4.8% imbalance</td>
+              <td><span class="r3-perf-badge green">ROC-AUC: 0.8435</span></td>
+              <td>8 ms</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 14px;">
+          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; padding: 10px 14px;">
+            <strong style="color: #38bdf8; font-size: 12px; display: block; margin-bottom: 4px;">Zero Data Leakage:</strong>
+            <span style="color: #94a3b8; font-size: 11px; line-height: 1.4;">Imputers and scalers fit strictly on training folds inside <code>scikit-learn.Pipeline</code> objects.</span>
+          </div>
+          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; padding: 10px 14px;">
+            <strong style="color: #10b981; font-size: 12px; display: block; margin-bottom: 4px;">Probability Calibration:</strong>
+            <span style="color: #94a3b8; font-size: 11px; line-height: 1.4;">Platt scaling sigmoid calibration ensures probabilities represent true empirical risk frequency.</span>
+          </div>
+          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; padding: 10px 14px;">
+            <strong style="color: #fbbf24; font-size: 12px; display: block; margin-bottom: 4px;">Unit Invariance:</strong>
+            <span style="color: #94a3b8; font-size: 11px; line-height: 1.4;">Strict clinical unit conversion layer guarantees identical inference regardless of input source format.</span>
+          </div>
+        </div>
+      </div>
+      <footer class="bottombar"><span class="footer-text">Demonstrates technically correct algorithms, parameters, and practices</span><span class="slide-count"></span></footer>
+    </section>
+
+
+    <!-- ── OUTPUT SLIDE 1: Type 2 Diabetes ── -->
+    <section class="slide dark" style="--bg: url('https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=1800&q=85');">
+      <header class="topbar">
+        <div class="brand"><div class="mark">O1</div><strong>Criterion 3: Results Obtained (1/5)</strong></div>
+        <span class="pill" style="color: #4ade80; border-color: #16a34a;">Type 2 Diabetes Validation</span>
+      </header>
+      <div class="content wide" style="padding-top: 2px;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+          <div>
+            <h3 style="font-size: 1.15rem; font-weight: 800; color: #f8fafc; margin: 0;">Type 2 Diabetes: Validated ExtraTreesClassifier Output vs GPT Clinical Benchmark</h3>
+            <span style="font-size: 0.76rem; color: #94a3b8;">100% Concordant Staging &bull; Moderate Risk (45% vs 52%) &bull; Fasting Glucose: 108 mg/dL, HbA1c: 5.9%</span>
+          </div>
+          <span style="font-size: 0.74rem; color: #38bdf8;">🖱️ Scroll wheel to zoom &bull; Click to fullscreen</span>
+        </div>
+        <div class="r3-grid-two">
+          
+          <!-- LEFT: TwinHealth Output -->
+          <div class="r3-report-card">
+            <div class="r3-report-card-top">
+              <span class="r3-report-badge">🩺 TwinHealth AI Local Model Output</span>
+              <span class="r3-zoom-hint" onclick="openReportModal('assets/diabetes_report.png', 'Type 2 Diabetes - TwinHealth Local ML Report')">🔍 Click Fullscreen</span>
+            </div>
+            <div class="r3-img-wrap zoomable-img-wrap" data-img-src="assets/diabetes_report.png" data-img-title="Type 2 Diabetes - TwinHealth Local ML Report">
+              <div class="zoom-controls">
+                <span class="zoom-indicator">100%</span>
+                <button class="zoom-btn zoom-in-btn" title="Zoom In">+</button>
+                <button class="zoom-btn zoom-out-btn" title="Zoom Out">−</button>
+                <button class="zoom-btn zoom-reset-btn" title="Reset Zoom">↺</button>
+              </div>
+              <div class="zoom-lens-tip">🖱️ Scroll wheel to zoom &bull; Drag to pan</div>
+              <div class="zoom-img-container">
+                <img src="assets/diabetes_report.png" alt="TwinHealth Type 2 Diabetes Report" />
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: GPT Clinical Intelligence Benchmark -->
+          <div class="r3-report-card">
+            <div class="r3-report-card-top">
+              <span class="r3-report-badge" style="color: #34d399;">🤖 GPT Clinical Intelligence Benchmark</span>
+              <span class="r3-zoom-hint" onclick="openReportModal('assets/gpt_diabetes.png', 'Type 2 Diabetes - GPT Clinical Benchmark Report')">🔍 Click Fullscreen</span>
+            </div>
+            <div class="r3-img-wrap zoomable-img-wrap" data-img-src="assets/gpt_diabetes.png" data-img-title="Type 2 Diabetes - GPT Clinical Benchmark Report">
+              <div class="zoom-controls">
+                <span class="zoom-indicator">100%</span>
+                <button class="zoom-btn zoom-in-btn" title="Zoom In">+</button>
+                <button class="zoom-btn zoom-out-btn" title="Zoom Out">−</button>
+                <button class="zoom-btn zoom-reset-btn" title="Reset Zoom">↺</button>
+              </div>
+              <div class="zoom-lens-tip">🖱️ Scroll wheel to zoom &bull; Drag to pan</div>
+              <div class="zoom-img-container">
+                <img src="assets/gpt_diabetes.png" alt="GPT-4o Type 2 Diabetes Benchmark Report" />
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <footer class="bottombar"><span class="footer-text">Model Comparison: ExtraTreesClassifier (118ms Local) vs GPT Clinical Standard</span><span class="slide-count"></span></footer>
+    </section>
+
+
+    <!-- ── OUTPUT SLIDE 2: Heart Disease ── -->
+    <section class="slide dark" style="--bg: url('https://images.unsplash.com/photo-1530497610245-94d3c16cda28?auto=format&fit=crop&w=1800&q=85');">
+      <header class="topbar">
+        <div class="brand"><div class="mark">O2</div><strong>Criterion 3: Results Obtained (2/5)</strong></div>
+        <span class="pill" style="color: #4ade80; border-color: #16a34a;">Heart Disease Validation</span>
+      </header>
+      <div class="content wide" style="padding-top: 2px;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+          <div>
+            <h3 style="font-size: 1.15rem; font-weight: 800; color: #f8fafc; margin: 0;">Heart Disease: Validated Balanced LogisticRegression Output vs GPT Benchmark</h3>
+            <span style="font-size: 0.76rem; color: #94a3b8;">100% Concordant Staging &bull; Moderate Risk (63% vs 63%) &bull; BP: 142/90 mmHg, Chol: 235 mg/dL</span>
+          </div>
+          <span style="font-size: 0.74rem; color: #38bdf8;">🖱️ Scroll wheel to zoom &bull; Click to fullscreen</span>
+        </div>
+        <div class="r3-grid-two">
+          
+          <!-- LEFT: TwinHealth Output -->
+          <div class="r3-report-card">
+            <div class="r3-report-card-top">
+              <span class="r3-report-badge">❤️ TwinHealth AI Local Model Output</span>
+              <span class="r3-zoom-hint" onclick="openReportModal('assets/heart_report.png', 'Heart Disease - TwinHealth Local ML Report')">🔍 Click Fullscreen</span>
+            </div>
+            <div class="r3-img-wrap zoomable-img-wrap" data-img-src="assets/heart_report.png" data-img-title="Heart Disease - TwinHealth Local ML Report">
+              <div class="zoom-controls">
+                <span class="zoom-indicator">100%</span>
+                <button class="zoom-btn zoom-in-btn" title="Zoom In">+</button>
+                <button class="zoom-btn zoom-out-btn" title="Zoom Out">−</button>
+                <button class="zoom-btn zoom-reset-btn" title="Reset Zoom">↺</button>
+              </div>
+              <div class="zoom-lens-tip">🖱️ Scroll wheel to zoom &bull; Drag to pan</div>
+              <div class="zoom-img-container">
+                <img src="assets/heart_report.png" alt="TwinHealth Heart Disease Report" />
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: GPT Clinical Intelligence Benchmark -->
+          <div class="r3-report-card">
+            <div class="r3-report-card-top">
+              <span class="r3-report-badge" style="color: #34d399;">🤖 GPT Clinical Intelligence Benchmark</span>
+              <span class="r3-zoom-hint" onclick="openReportModal('assets/gpt_heart.png', 'Heart Disease - GPT Clinical Benchmark Report')">🔍 Click Fullscreen</span>
+            </div>
+            <div class="r3-img-wrap zoomable-img-wrap" data-img-src="assets/gpt_heart.png" data-img-title="Heart Disease - GPT Clinical Benchmark Report">
+              <div class="zoom-controls">
+                <span class="zoom-indicator">100%</span>
+                <button class="zoom-btn zoom-in-btn" title="Zoom In">+</button>
+                <button class="zoom-btn zoom-out-btn" title="Zoom Out">−</button>
+                <button class="zoom-btn zoom-reset-btn" title="Reset Zoom">↺</button>
+              </div>
+              <div class="zoom-lens-tip">🖱️ Scroll wheel to zoom &bull; Drag to pan</div>
+              <div class="zoom-img-container">
+                <img src="assets/gpt_heart.png" alt="GPT-4o Heart Disease Benchmark Report" />
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <footer class="bottombar"><span class="footer-text">Model Comparison: Balanced LogisticRegression (10ms Local) vs GPT Clinical Standard</span><span class="slide-count"></span></footer>
+    </section>
+
+
+    <!-- ── OUTPUT SLIDE 3: Chronic Kidney Disease ── -->
+    <section class="slide dark" style="--bg: url('https://images.unsplash.com/photo-1559757175-5700dde675bc?auto=format&fit=crop&w=1800&q=85');">
+      <header class="topbar">
+        <div class="brand"><div class="mark">O3</div><strong>Criterion 3: Results Obtained (3/5)</strong></div>
+        <span class="pill" style="color: #4ade80; border-color: #16a34a;">Chronic Kidney Disease (CKD)</span>
+      </header>
+      <div class="content wide" style="padding-top: 2px;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+          <div>
+            <h3 style="font-size: 1.15rem; font-weight: 800; color: #f8fafc; margin: 0;">Chronic Kidney Disease: Validated RandomForestClassifier Output vs GPT Benchmark</h3>
+            <span style="font-size: 0.76rem; color: #94a3b8;">100% Concordant Staging &bull; Low Risk &bull; eGFR: 95 mL/min/1.73m², Creatinine: 1.0 mg/dL</span>
+          </div>
+          <span style="font-size: 0.74rem; color: #38bdf8;">🖱️ Scroll wheel to zoom &bull; Click to fullscreen</span>
+        </div>
+        <div class="r3-grid-two">
+          
+          <!-- LEFT: TwinHealth Output -->
+          <div class="r3-report-card">
+            <div class="r3-report-card-top">
+              <span class="r3-report-badge">🫘 TwinHealth AI Local Model Output</span>
+              <span class="r3-zoom-hint" onclick="openReportModal('assets/ckd_report.png', 'Chronic Kidney Disease - TwinHealth Local ML Report')">🔍 Click Fullscreen</span>
+            </div>
+            <div class="r3-img-wrap zoomable-img-wrap" data-img-src="assets/ckd_report.png" data-img-title="Chronic Kidney Disease - TwinHealth Local ML Report">
+              <div class="zoom-controls">
+                <span class="zoom-indicator">100%</span>
+                <button class="zoom-btn zoom-in-btn" title="Zoom In">+</button>
+                <button class="zoom-btn zoom-out-btn" title="Zoom Out">−</button>
+                <button class="zoom-btn zoom-reset-btn" title="Reset Zoom">↺</button>
+              </div>
+              <div class="zoom-lens-tip">🖱️ Scroll wheel to zoom &bull; Drag to pan</div>
+              <div class="zoom-img-container">
+                <img src="assets/ckd_report.png" alt="TwinHealth CKD Report" />
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: GPT Clinical Intelligence Benchmark -->
+          <div class="r3-report-card">
+            <div class="r3-report-card-top">
+              <span class="r3-report-badge" style="color: #34d399;">🤖 GPT Clinical Intelligence Benchmark</span>
+              <span class="r3-zoom-hint" onclick="openReportModal('assets/gpt_ckd.png', 'Chronic Kidney Disease - GPT Clinical Benchmark Report')">🔍 Click Fullscreen</span>
+            </div>
+            <div class="r3-img-wrap zoomable-img-wrap" data-img-src="assets/gpt_ckd.png" data-img-title="Chronic Kidney Disease - GPT Clinical Benchmark Report">
+              <div class="zoom-controls">
+                <span class="zoom-indicator">100%</span>
+                <button class="zoom-btn zoom-in-btn" title="Zoom In">+</button>
+                <button class="zoom-btn zoom-out-btn" title="Zoom Out">−</button>
+                <button class="zoom-btn zoom-reset-btn" title="Reset Zoom">↺</button>
+              </div>
+              <div class="zoom-lens-tip">🖱️ Scroll wheel to zoom &bull; Drag to pan</div>
+              <div class="zoom-img-container">
+                <img src="assets/gpt_ckd.png" alt="GPT-4o CKD Benchmark Report" />
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <footer class="bottombar"><span class="footer-text">Model Comparison: RandomForestClassifier (22ms Local) vs GPT Clinical Standard</span><span class="slide-count"></span></footer>
+    </section>
+
+
+    <!-- ── OUTPUT SLIDE 4: Liver Disease ── -->
+    <section class="slide dark" style="--bg: url('https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1800&q=85');">
+      <header class="topbar">
+        <div class="brand"><div class="mark">O4</div><strong>Criterion 3: Results Obtained (4/5)</strong></div>
+        <span class="pill" style="color: #4ade80; border-color: #16a34a;">Liver Disease Validation</span>
+      </header>
+      <div class="content wide" style="padding-top: 2px;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+          <div>
+            <h3 style="font-size: 1.15rem; font-weight: 800; color: #f8fafc; margin: 0;">Liver Disease: Validated GradientBoostingClassifier Output vs GPT Benchmark</h3>
+            <span style="font-size: 0.76rem; color: #94a3b8;">Concordant Hepatic Evaluation &bull; Calibrated Risk &bull; ALP: 104 U/L, ALT: 36 U/L, BMI: 28.4 kg/m²</span>
+          </div>
+          <span style="font-size: 0.74rem; color: #38bdf8;">🖱️ Scroll wheel to zoom &bull; Click to fullscreen</span>
+        </div>
+        <div class="r3-grid-two">
+          
+          <!-- LEFT: TwinHealth Output -->
+          <div class="r3-report-card">
+            <div class="r3-report-card-top">
+              <span class="r3-report-badge">🟤 TwinHealth AI Local Model Output</span>
+              <span class="r3-zoom-hint" onclick="openReportModal('assets/liver_report.png', 'Liver Disease - TwinHealth Local ML Report')">🔍 Click Fullscreen</span>
+            </div>
+            <div class="r3-img-wrap zoomable-img-wrap" data-img-src="assets/liver_report.png" data-img-title="Liver Disease - TwinHealth Local ML Report">
+              <div class="zoom-controls">
+                <span class="zoom-indicator">100%</span>
+                <button class="zoom-btn zoom-in-btn" title="Zoom In">+</button>
+                <button class="zoom-btn zoom-out-btn" title="Zoom Out">−</button>
+                <button class="zoom-btn zoom-reset-btn" title="Reset Zoom">↺</button>
+              </div>
+              <div class="zoom-lens-tip">🖱️ Scroll wheel to zoom &bull; Drag to pan</div>
+              <div class="zoom-img-container">
+                <img src="assets/liver_report.png" alt="TwinHealth Liver Disease Report" />
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: GPT Clinical Intelligence Benchmark -->
+          <div class="r3-report-card">
+            <div class="r3-report-card-top">
+              <span class="r3-report-badge" style="color: #34d399;">🤖 GPT Clinical Intelligence Benchmark</span>
+              <span class="r3-zoom-hint" onclick="openReportModal('assets/gpt_liver.png', 'Liver Disease - GPT Clinical Benchmark Report')">🔍 Click Fullscreen</span>
+            </div>
+            <div class="r3-img-wrap zoomable-img-wrap" data-img-src="assets/gpt_liver.png" data-img-title="Liver Disease - GPT Clinical Benchmark Report">
+              <div class="zoom-controls">
+                <span class="zoom-indicator">100%</span>
+                <button class="zoom-btn zoom-in-btn" title="Zoom In">+</button>
+                <button class="zoom-btn zoom-out-btn" title="Zoom Out">−</button>
+                <button class="zoom-btn zoom-reset-btn" title="Reset Zoom">↺</button>
+              </div>
+              <div class="zoom-lens-tip">🖱️ Scroll wheel to zoom &bull; Drag to pan</div>
+              <div class="zoom-img-container">
+                <img src="assets/gpt_liver.png" alt="GPT-4o Liver Disease Benchmark Report" />
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <footer class="bottombar"><span class="footer-text">Model Comparison: GradientBoostingClassifier (5ms Local) vs GPT Clinical Standard</span><span class="slide-count"></span></footer>
+    </section>
+
+
+    <!-- ── OUTPUT SLIDE 5: Stroke Risk ── -->
+    <section class="slide dark" style="--bg: url('https://images.unsplash.com/photo-1559757148-5c350d0d3c56?auto=format&fit=crop&w=1800&q=85');">
+      <header class="topbar">
+        <div class="brand"><div class="mark">O5</div><strong>Criterion 3: Results Obtained (5/5)</strong></div>
+        <span class="pill" style="color: #4ade80; border-color: #16a34a;">Stroke Risk Validation</span>
+      </header>
+      <div class="content wide" style="padding-top: 2px;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+          <div>
+            <h3 style="font-size: 1.15rem; font-weight: 800; color: #f8fafc; margin: 0;">Stroke Risk: Validated Calibrated LogisticRegression Output vs GPT Benchmark</h3>
+            <span style="font-size: 0.76rem; color: #94a3b8;">100% Concordant Staging &bull; Low Risk (28% vs 15%) &bull; Systolic BP: 138 mmHg, Age: 47 yrs</span>
+          </div>
+          <span style="font-size: 0.74rem; color: #38bdf8;">🖱️ Scroll wheel to zoom &bull; Click to fullscreen</span>
+        </div>
+        <div class="r3-grid-two">
+          
+          <!-- LEFT: TwinHealth Output -->
+          <div class="r3-report-card">
+            <div class="r3-report-card-top">
+              <span class="r3-report-badge">🧠 TwinHealth AI Local Model Output</span>
+              <span class="r3-zoom-hint" onclick="openReportModal('assets/stroke_report.png', 'Stroke Risk - TwinHealth Local ML Report')">🔍 Click Fullscreen</span>
+            </div>
+            <div class="r3-img-wrap zoomable-img-wrap" data-img-src="assets/stroke_report.png" data-img-title="Stroke Risk - TwinHealth Local ML Report">
+              <div class="zoom-controls">
+                <span class="zoom-indicator">100%</span>
+                <button class="zoom-btn zoom-in-btn" title="Zoom In">+</button>
+                <button class="zoom-btn zoom-out-btn" title="Zoom Out">−</button>
+                <button class="zoom-btn zoom-reset-btn" title="Reset Zoom">↺</button>
+              </div>
+              <div class="zoom-lens-tip">🖱️ Scroll wheel to zoom &bull; Drag to pan</div>
+              <div class="zoom-img-container">
+                <img src="assets/stroke_report.png" alt="TwinHealth Stroke Risk Report" />
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: GPT Clinical Intelligence Benchmark -->
+          <div class="r3-report-card">
+            <div class="r3-report-card-top">
+              <span class="r3-report-badge" style="color: #34d399;">🤖 GPT Clinical Intelligence Benchmark</span>
+              <span class="r3-zoom-hint" onclick="openReportModal('assets/gpt_stroke.png', 'Stroke Risk - GPT Clinical Benchmark Report')">🔍 Click Fullscreen</span>
+            </div>
+            <div class="r3-img-wrap zoomable-img-wrap" data-img-src="assets/gpt_stroke.png" data-img-title="Stroke Risk - GPT Clinical Benchmark Report">
+              <div class="zoom-controls">
+                <span class="zoom-indicator">100%</span>
+                <button class="zoom-btn zoom-in-btn" title="Zoom In">+</button>
+                <button class="zoom-btn zoom-out-btn" title="Zoom Out">−</button>
+                <button class="zoom-btn zoom-reset-btn" title="Reset Zoom">↺</button>
+              </div>
+              <div class="zoom-lens-tip">🖱️ Scroll wheel to zoom &bull; Drag to pan</div>
+              <div class="zoom-img-container">
+                <img src="assets/gpt_stroke.png" alt="GPT-4o Stroke Risk Benchmark Report" />
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <footer class="bottombar"><span class="footer-text">Model Comparison: Calibrated LogisticRegression (8ms Local) vs GPT Clinical Standard</span><span class="slide-count"></span></footer>
+    </section>
+
+
+    <section class="slide dark" style="--bg: url('https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1800&q=85');">
+      <header class="topbar">
+        <div class="brand"><div class="mark">M3</div><strong>Criterion 3: Comparative Benchmarks</strong></div>
+        <span class="pill" style="color: #4ade80; border-color: #16a34a;">Quantitative Metrics</span>
+      </header>
+      <div class="content wide">
+        <p class="eyebrow">Interim Metrics & Clinical Diagnostic Validation</p>
+        <h2 style="font-size: clamp(1.4rem, 2.3vw, 1.9rem); margin-bottom: 6px;">Multi-Disease Machine Learning Benchmark Matrix</h2>
+        <p class="lead" style="font-size: 0.88rem; color: #94a3b8; margin-bottom: 12px;">Presents cross-validation results across all 5 clinical pipelines tested against held-out validation sets:</p>
+        
+        <table class="r3-matrix-table">
+          <thead>
+            <tr>
+              <th>Chronic Target</th>
+              <th>Deployed Algorithm</th>
+              <th>ROC-AUC</th>
+              <th>Sensitivity / Recall</th>
+              <th>Specificity</th>
+              <th>Brier Score</th>
+              <th>Latency</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Type 2 Diabetes</strong></td>
+              <td>ExtraTreesClassifier</td>
+              <td><span class="r3-perf-badge green">0.8191</span></td>
+              <td>82.4%</td>
+              <td>81.0%</td>
+              <td>0.141</td>
+              <td>118 ms</td>
+            </tr>
+            <tr>
+              <td><strong>Heart Disease</strong></td>
+              <td>Balanced LogisticRegression</td>
+              <td><span class="r3-perf-badge green">0.8643</span></td>
+              <td>87.5%</td>
+              <td>85.2%</td>
+              <td>0.129</td>
+              <td>10 ms</td>
+            </tr>
+            <tr>
+              <td><strong>Chronic Kidney Disease</strong></td>
+              <td>RandomForestClassifier</td>
+              <td><span class="r3-perf-badge green">1.0000</span></td>
+              <td>100.0%</td>
+              <td>100.0%</td>
+              <td>0.024</td>
+              <td>22 ms</td>
+            </tr>
+            <tr>
+              <td><strong>Liver Disease</strong></td>
+              <td>GradientBoostingClassifier</td>
+              <td><span class="r3-perf-badge blue">0.7636</span></td>
+              <td>76.9%</td>
+              <td>75.0%</td>
+              <td>0.168</td>
+              <td>5 ms</td>
+            </tr>
+            <tr>
+              <td><strong>Stroke Risk</strong></td>
+              <td>Calibrated LogisticRegression</td>
+              <td><span class="r3-perf-badge green">0.8435</span></td>
+              <td>81.8%</td>
+              <td>86.4%</td>
+              <td>0.115</td>
+              <td>8 ms</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 14px;">
+          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 6px; padding: 10px 14px;">
+            <strong style="color: #10b981; font-size: 12px; display: block; margin-bottom: 4px;">High Sensitivity Priority:</strong>
+            <span style="color: #94a3b8; font-size: 11px; line-height: 1.4;">Class balancing ensures high recall (>82%) across all critical conditions, minimizing dangerous false negatives.</span>
+          </div>
+          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px; padding: 10px 14px;">
+            <strong style="color: #38bdf8; font-size: 12px; display: block; margin-bottom: 4px;">Sub-120ms Latency:</strong>
+            <span style="color: #94a3b8; font-size: 11px; line-height: 1.4;">All 5 models evaluate simultaneously in under 150 ms total runtime, eliminating cloud dependency and token costs.</span>
+          </div>
+          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 6px; padding: 10px 14px;">
+            <strong style="color: #fbbf24; font-size: 12px; display: block; margin-bottom: 4px;">Brier Calibration Reliability:</strong>
+            <span style="color: #94a3b8; font-size: 11px; line-height: 1.4;">Brier calibration scores < 0.17 indicate high alignment between predicted probability and actual medical risk.</span>
+          </div>
+        </div>
+      </div>
+      <footer class="bottombar"><span class="footer-text">Quantitative comparison and empirical validation metrics</span><span class="slide-count"></span></footer>
+    </section>
+
+
+    <!-- ── SYSTEM ARCHITECTURE SLIDE ── -->
+    <section class="slide dark" style="--bg: url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1800&q=85');">
+      <header class="topbar">
+        <div class="brand"><div class="mark">SYS</div><strong>System Architecture & Pipeline Flow</strong></div>
+        <span class="pill" style="color: #38bdf8; border-color: #0284c7;">End-to-End Design</span>
+      </header>
+      <div class="content wide" style="padding-top: 2px;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+          <div>
+            <p class="eyebrow" style="margin-bottom: 2px;">Clinical Intelligence Flow & 3-Tier Layered Architecture</p>
+            <h2 style="font-size: clamp(1.25rem, 2vw, 1.65rem); margin: 0; color: #f8fafc;">System Architecture: 4-Phase Decision Pipeline & System Layers</h2>
+          </div>
+          <span style="font-size: 0.74rem; color: #38bdf8;">🖱️ Scroll wheel to zoom &bull; Click to fullscreen</span>
+        </div>
+        
+        <div class="r3-report-card" style="padding: 8px 10px; height: calc(100vh - 215px); max-height: 72vh;">
+          <div class="r3-report-card-top" style="margin-bottom: 6px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="r3-report-badge" style="color: #38bdf8;">📐 TwinHealth AI End-to-End Architectural Model</span>
+              <span style="color: #94a3b8; font-size: 11px;">Phase 1 (Input) &rarr; Phase 2 (Analysis) &rarr; Phase 3 (Simulation) &rarr; Phase 4 (Action Plan)</span>
+            </div>
+            <span class="r3-zoom-hint" onclick="openReportModal('assets/arch.png', 'TwinHealth AI System Architecture')">🔍 Click Fullscreen</span>
+          </div>
+          <div class="r3-img-wrap zoomable-img-wrap" data-img-src="assets/arch.png" data-img-title="TwinHealth AI System Architecture" style="background: #ffffff;">
+            <div class="zoom-controls">
+              <span class="zoom-indicator">100%</span>
+              <button class="zoom-btn zoom-in-btn" title="Zoom In">+</button>
+              <button class="zoom-btn zoom-out-btn" title="Zoom Out">−</button>
+              <button class="zoom-btn zoom-reset-btn" title="Reset Zoom">↺</button>
+            </div>
+            <div class="zoom-lens-tip" style="color: #334155; background: rgba(255,255,255,0.9); border-color: rgba(0,0,0,0.12);">🖱️ Scroll wheel to zoom &bull; Drag to pan &bull; Click fullscreen</div>
+            <div class="zoom-img-container">
+              <img src="assets/arch.png" alt="TwinHealth AI System Architecture" style="object-fit: contain; max-height: 60vh;" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <footer class="bottombar"><span class="footer-text">Multi-Tier Clinical AI Architecture: Data Layer, Service Layer, and UI Presentation</span><span class="slide-count"></span></footer>
+    </section>
+
+<section class="slide" style="--bg: url('https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1800&q=85');">
+      <header class="topbar">
+        <div class="brand"><div class="mark">REF</div><strong>References</strong></div>
+        <span class="pill">Single page</span>
+      </header>
+      <div class="content wide">
+        <p class="eyebrow" style="margin: 0; font-size: 0.75rem;">Literature support & empirical foundation</p>
+        <h2 style="font-size: clamp(1.1rem, 2vw, 1.45rem); margin: 4px 0 10px 0; color: #1e293b;">Recent Chronic Disease & Clinical AI Literature References</h2>
+        <div class="panel compact-panel" style="max-height: 74vh; padding: 14px 18px;">
+          <ol class="reference-list all-refs">
+            <li>D. A. Debal and T. M. Sitote, "Chronic kidney disease prediction using machine learning techniques," <em>Journal of Big Data</em>, vol. 9, no. 1, p. 109, 2022, doi: <a href="https://doi.org/10.1186/s40537-022-00657-5">10.1186/s40537-022-00657-5</a>.</li>
+            <li>M. A. Islam, M. Z. H. Majumder, and M. A. Hussein, "Chronic kidney disease prediction based on machine learning algorithms," <em>Journal of Pathology Informatics</em>, vol. 14, p. 100189, 2023, doi: <a href="https://doi.org/10.1016/j.jpi.2023.100189">10.1016/j.jpi.2023.100189</a>.</li>
+            <li>M. M. Rahman, M. Al-Amin, and J. Hossain, "Machine learning models for chronic kidney disease diagnosis and prediction," <em>Biomedical Signal Processing and Control</em>, vol. 87, p. 105368, 2024, doi: <a href="https://doi.org/10.1016/j.bspc.2023.105368">10.1016/j.bspc.2023.105368</a>.</li>
+            <li>G. Dharmarathne, M. Bogahawaththa, M. McAfee, U. Rathnayake, and D. Meddage, "On the diagnosis of chronic kidney disease using a machine learning-based interface with explainable artificial intelligence," <em>Intelligent Systems with Applications</em>, vol. 22, p. 200397, 2024, doi: <a href="https://doi.org/10.1016/j.iswa.2024.200397">10.1016/j.iswa.2024.200397</a>.</li>
+            <li>S. Reddy et al., "Predicting chronic kidney disease progression using small pathology datasets and explainable machine learning models," <em>Computer Methods and Programs in Biomedicine Update</em>, vol. 6, p. 100160, 2024, doi: <a href="https://doi.org/10.1016/j.cmpbup.2024.100160">10.1016/j.cmpbup.2024.100160</a>.</li>
+            <li>V. K. Venkatesan, M. T. Ramakrishna, I. Izonin, R. Tkachenko, and M. Havryliuk, "Efficient data preprocessing with ensemble machine learning technique for the early detection of chronic kidney disease," <em>Applied Sciences</em>, vol. 13, no. 5, p. 2885, 2023, doi: <a href="https://doi.org/10.3390/app13052885">10.3390/app13052885</a>.</li>
+            <li>Y. Dubey, P. Mange, Y. Barapatre, B. Sable, P. Palsodkar, and R. Umate, "Unlocking precision medicine for prognosis of chronic kidney disease using machine learning," <em>Diagnostics</em>, vol. 13, no. 19, p. 3151, 2023, doi: <a href="https://doi.org/10.3390/diagnostics13193151">10.3390/diagnostics13193151</a>.</li>
+            <li>K. Venkatrao and S. Kareemulla, "HDLNET: A hybrid deep learning network model with intelligent IoT for detection and classification of chronic kidney disease," <em>IEEE Access</em>, vol. 11, pp. 99638-99652, 2023, doi: <a href="https://doi.org/10.1109/ACCESS.2023.3312183">10.1109/ACCESS.2023.3312183</a>.</li>
+            <li>E. Dritsas and M. Trigka, "Machine learning techniques for chronic kidney disease risk prediction," <em>Big Data and Cognitive Computing</em>, vol. 6, no. 3, p. 98, 2022, doi: <a href="https://doi.org/10.3390/bdcc6030098">10.3390/bdcc6030098</a>.</li>
+            <li>Q. Bai, C. Su, W. Tang, and Y. Li, "Machine learning to predict end stage kidney disease in chronic kidney disease," <em>Scientific Reports</em>, vol. 12, p. 8377, 2022, doi: <a href="https://doi.org/10.1038/s41598-022-12316-z">10.1038/s41598-022-12316-z</a>.</li>
+            <li>F. Sanmarchi, C. Fanconi, D. Golinelli, D. Gori, T. Hernandez-Boussard, and A. Capodici, "Predict, diagnose, and treat chronic kidney disease with machine learning: A systematic literature review," <em>Journal of Nephrology</em>, vol. 36, no. 4, pp. 1101-1117, 2023, doi: <a href="https://doi.org/10.1007/s40620-023-01573-4">10.1007/s40620-023-01573-4</a>.</li>
+            <li>P. Liang, J. Yang, W. Wang, G. Yuan, M. Han, Q. Zhang, and Z. Li, "Deep learning identifies intelligible predictors of poor prognosis in chronic kidney disease," <em>IEEE Journal of Biomedical and Health Informatics</em>, vol. 27, no. 7, pp. 3677-3685, 2023, doi: <a href="https://doi.org/10.1109/JBHI.2023.3266587">10.1109/JBHI.2023.3266587</a>.</li>
+            <li>S. K. Ghosh and A. H. Khandoker, "A machine learning driven nomogram for predicting chronic kidney disease stages 3-5," <em>Scientific Reports</em>, vol. 13, pp. 1-14, 2023, doi: <a href="https://doi.org/10.1038/s41598-023-48815-w">10.1038/s41598-023-48815-w</a>.</li>
+            <li>S. K. Ghosh and A. H. Khandoker, "Investigation on explainable machine learning models to predict chronic kidney diseases," <em>Scientific Reports</em>, vol. 14, p. 3687, 2024, doi: <a href="https://doi.org/10.1038/s41598-024-54375-4">10.1038/s41598-024-54375-4</a>.</li>
+            <li>N. G. Rezk, S. Alshathri, A. Sayed, and E. E.-D. Hemdan, "Explainable AI for chronic kidney disease prediction in medical IoT: Integrating GANs and few-shot learning," <em>Bioengineering</em>, vol. 12, no. 4, p. 356, 2025, doi: <a href="https://doi.org/10.3390/bioengineering12040356">10.3390/bioengineering12040356</a>.</li>
+            <li>R. K. Halder et al., "ML-CKDP: Machine learning-based chronic kidney disease prediction with smart web application," <em>Journal of Pathology Informatics</em>, vol. 15, p. 100371, 2024, doi: <a href="https://doi.org/10.1016/j.jpi.2024.100371">10.1016/j.jpi.2024.100371</a>.</li>
+            <li>N. Khan, M. A. Raza, N. H. Mirjat, N. Balouch, G. Abbas, A. Yousef, and E. Touti, "Unveiling the predictive power: A comprehensive study of machine learning model for anticipating chronic kidney disease," <em>Frontiers in Artificial Intelligence</em>, vol. 6, 2024, doi: <a href="https://doi.org/10.3389/frai.2023.1339988">10.3389/frai.2023.1339988</a>.</li>
+            <li>D. Saif, A. M. Sarhan, and N. M. Elshennawy, "Deep-kidney: An effective deep learning framework for chronic kidney disease prediction," <em>Health Information Science and Systems</em>, vol. 12, no. 1, p. 3, 2023, doi: <a href="https://doi.org/10.1007/s13755-023-00261-8">10.1007/s13755-023-00261-8</a>.</li>
+          </ol>
+        </div>
+      </div>
+      <footer class="bottombar"><span class="footer-text">All references consolidated into one final page</span><span class="slide-count"></span></footer>
+    </section>
+  </main>
+
+  <!-- Interactive Full-Resolution Report Zoom Modal -->
+  <div id="reportZoomModal" class="diagram-modal" aria-hidden="true">
+    <div class="diagram-modal-content" style="max-height: 94vh; padding: 12px; background: #070d19; border: 1px solid #38bdf8;">
+      <button class="modal-close" id="reportModalClose" onclick="closeReportModal()">✕</button>
+      <div id="reportModalTitle" style="color: #38bdf8; font-size: 14px; font-weight: 800; margin-bottom: 8px; text-transform: uppercase;">Clinical Report</div>
+      <img id="reportModalImg" src="" alt="Full Resolution Clinical Report" style="max-height: 84vh; max-width: 90vw; object-fit: contain; border-radius: 6px;" />
+    </div>
+  </div>
+
+
+  <!-- Interactive Full-Resolution Report Zoom Modal -->
+  <div id="reportZoomModal" class="diagram-modal" aria-hidden="true" role="dialog" aria-label="Clinical Report Zoom">
+    <div class="diagram-modal-content" style="max-height: 94vh; padding: 12px; background: #070d19; border: 1px solid #38bdf8;">
+      <button class="modal-close" id="reportModalClose" onclick="closeReportModal()">✕</button>
+      <div id="reportModalTitle" style="color: #38bdf8; font-size: 14px; font-weight: 800; margin-bottom: 8px; text-transform: uppercase;">Clinical Report</div>
+      <img id="reportModalImg" src="" alt="Full Resolution Clinical Report" style="max-height: 84vh; max-width: 90vw; object-fit: contain; border-radius: 6px;" />
+    </div>
+  </div>
+
+  <div class="print-hint">Use arrow keys. Press P to print/save as PDF.</div>
+  <nav class="controls" aria-label="Slide controls">
+    <button class="control-btn" id="prevBtn" aria-label="Previous slide">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="control-btn" id="nextBtn" aria-label="Next slide">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </nav>
+  <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+
+  <!-- ── Full Size Diagram Lightbox Modal ── -->
+  <div class="diagram-modal" id="diagModal" aria-hidden="true" role="dialog" aria-label="Full size architecture diagram">
+    <div class="diagram-modal-content">
+      <button class="modal-close" id="modalClose" aria-label="Close full size view">&times;</button>
+      <img src="assets/arch.png" alt="System architecture full size diagram" />
+    </div>
+  </div>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll(".slide"));
+    const progressBar = document.getElementById("progressBar");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const diagFrame = document.getElementById("diagFrame");
+    const diagModal = document.getElementById("diagModal");
+    const modalClose = document.getElementById("modalClose");
+    let current = 0;
+
+    function openModal() {
+      if (diagModal) {
+        diagModal.classList.add("active");
+        diagModal.setAttribute("aria-hidden", "false");
+      }
+    }
+
+    function closeModal() {
+      if (diagModal) {
+        diagModal.classList.remove("active");
+        diagModal.setAttribute("aria-hidden", "true");
+      }
+    }
+
+    if (diagFrame) diagFrame.addEventListener("click", openModal);
+    if (modalClose) modalClose.addEventListener("click", closeModal);
+    if (diagModal) {
+      diagModal.addEventListener("click", (e) => {
+        if (e.target === diagModal) closeModal();
+      });
+    }
+
+    /* ── Full Resolution Report Zoom Modal ── */
+    function openReportModal(src, title) {
+      const m = document.getElementById('reportZoomModal');
+      const img = document.getElementById('reportModalImg');
+      const ttl = document.getElementById('reportModalTitle');
+      if (m && img) {
+        img.src = src;
+        if (ttl) ttl.textContent = title || 'Clinical Report';
+        m.classList.add('active');
+        m.setAttribute('aria-hidden', 'false');
+      }
+    }
+
+    function closeReportModal() {
+      const m = document.getElementById('reportZoomModal');
+      if (m) {
+        m.classList.remove('active');
+        m.setAttribute('aria-hidden', 'true');
+      }
+    }
+
+    const reportModal = document.getElementById('reportZoomModal');
+    if (reportModal) {
+      reportModal.addEventListener('click', (e) => {
+        if (e.target === reportModal) closeReportModal();
+      });
+    }
+
+    /* ── Slide Navigation ── */
+    function showSlide(index) {
+      current = Math.max(0, Math.min(index, slides.length - 1));
+      slides.forEach((slide, slideIndex) => {
+        slide.classList.toggle("active", slideIndex === current);
+        const count = slide.querySelector(".slide-count");
+        if (count) {
+          count.textContent = `${slideIndex + 1} / ${slides.length}`;
+        }
+      });
+      progressBar.style.width = `${((current + 1) / slides.length) * 100}%`;
+      prevBtn.disabled = current === 0;
+      nextBtn.disabled = current === slides.length - 1;
+    }
+
+    prevBtn.addEventListener("click", () => showSlide(current - 1));
+    nextBtn.addEventListener("click", () => showSlide(current + 1));
+
+    window.addEventListener("keydown", (event) => {
+      if ((diagModal && diagModal.classList.contains("active")) || 
+          (reportModal && reportModal.classList.contains("active"))) {
+        if (event.key === "Escape") {
+          closeModal();
+          closeReportModal();
+        }
+        return;
+      }
+      if (event.key === "ArrowRight" || event.key === " ") {
+        event.preventDefault();
+        showSlide(current + 1);
+      }
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        showSlide(current - 1);
+      }
+      if (event.key.toLowerCase() === "p") {
+        window.print();
+      }
+      if (event.key === "Home") {
+        showSlide(0);
+      }
+      if (event.key === "End") {
+        showSlide(slides.length - 1);
+      }
+    });
+
+    let touchStartX = 0;
+    window.addEventListener("touchstart", (event) => {
+      touchStartX = event.changedTouches[0].screenX;
+    }, { passive: true });
+    window.addEventListener("touchend", (event) => {
+      if ((diagModal && diagModal.classList.contains("active")) ||
+          (reportModal && reportModal.classList.contains("active"))) return;
+      const deltaX = event.changedTouches[0].screenX - touchStartX;
+      if (Math.abs(deltaX) > 55) {
+        showSlide(current + (deltaX < 0 ? 1 : -1));
+      }
+    }, { passive: true });
+
+    /* ── Interactive Mouse Scroll Zoom & Pan Engine ── */
+    function initZoomableImages() {
+      document.querySelectorAll('.zoomable-img-wrap').forEach(wrap => {
+        const container = wrap.querySelector('.zoom-img-container');
+        const indicator = wrap.querySelector('.zoom-indicator');
+        const btnIn = wrap.querySelector('.zoom-in-btn');
+        const btnOut = wrap.querySelector('.zoom-out-btn');
+        const btnReset = wrap.querySelector('.zoom-reset-btn');
+        const imgSrc = wrap.getAttribute('data-img-src');
+        const imgTitle = wrap.getAttribute('data-img-title');
+        if (!container) return;
+
+        let scale = 1;
+        let translateX = 0;
+        let translateY = 0;
+        let isDragging = false;
+        let startX = 0, startY = 0;
+        let moved = false;
+
+        function applyTransform() {
+          if (scale <= 1.02) {
+            scale = 1;
+            translateX = 0;
+            translateY = 0;
+            container.style.transform = 'scale(1)';
+            container.style.transformOrigin = 'center top';
+            wrap.classList.remove('is-zoomed');
+          } else {
+            container.style.transformOrigin = 'center top';
+            container.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            wrap.classList.add('is-zoomed');
+          }
+          if (indicator) {
+            indicator.textContent = `${Math.round(scale * 100)}%`;
+          }
+        }
+
+        function zoom(newScale, clientX, clientY) {
+          const oldScale = scale;
+          scale = Math.min(Math.max(1, newScale), 4.5);
+          if (scale > 1 && clientX !== undefined && clientY !== undefined) {
+            const rect = wrap.getBoundingClientRect();
+            const relX = clientX - (rect.left + rect.width / 2);
+            const relY = clientY - (rect.top + 30);
+            const scaleFactor = (scale / oldScale) - 1;
+            translateX -= relX * scaleFactor * 0.6;
+            translateY -= relY * scaleFactor * 0.6;
+          }
+          applyTransform();
+        }
+
+        wrap.addEventListener('wheel', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const zoomDelta = e.deltaY < 0 ? 0.35 : -0.35;
+          zoom(scale + zoomDelta, e.clientX, e.clientY);
+        }, { passive: false });
+
+        if (btnIn) {
+          btnIn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            zoom(scale + 0.4);
+          });
+        }
+        if (btnOut) {
+          btnOut.addEventListener('click', (e) => {
+            e.stopPropagation();
+            zoom(scale - 0.4);
+          });
+        }
+        if (btnReset) {
+          btnReset.addEventListener('click', (e) => {
+            e.stopPropagation();
+            scale = 1;
+            translateX = 0;
+            translateY = 0;
+            applyTransform();
+          });
+        }
+
+        wrap.addEventListener('dblclick', (e) => {
+          e.stopPropagation();
+          scale = 1;
+          translateX = 0;
+          translateY = 0;
+          applyTransform();
+        });
+
+        wrap.addEventListener('mousedown', (e) => {
+          if (e.target.closest('.zoom-controls') || e.target.closest('.r3-zoom-hint')) return;
+          moved = false;
+          if (scale > 1.05) {
+            isDragging = true;
+            startX = e.clientX - translateX;
+            startY = e.clientY - translateY;
+            wrap.classList.add('is-panning');
+          }
+        });
+
+        window.addEventListener('mousemove', (e) => {
+          if (!isDragging) return;
+          moved = true;
+          translateX = e.clientX - startX;
+          translateY = e.clientY - startY;
+          applyTransform();
+        });
+
+        window.addEventListener('mouseup', () => {
+          if (isDragging) {
+            isDragging = false;
+            wrap.classList.remove('is-panning');
+          }
+        });
+
+        wrap.addEventListener('click', (e) => {
+          if (e.target.closest('.zoom-controls') || e.target.closest('.r3-zoom-hint')) return;
+          if (!moved && scale <= 1.05 && imgSrc) {
+            openReportModal(imgSrc, imgTitle);
+          }
+        });
+      });
+    }
+
+    initZoomableImages();
+    showSlide(0);
+  </script>
+</body>
+</html>
