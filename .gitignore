@@ -1,9 +1,13 @@
+# ==============================================================================
 # Environment & Secrets
+# ==============================================================================
 .env
 .env.local
 *.env
 
+# ==============================================================================
 # Python Cache & Virtual Environments
+# ==============================================================================
 __pycache__/
 *.py[cod]
 *$py.class
@@ -16,22 +20,45 @@ venv/
 env/
 ENV/
 
-# Large Presentation Binaries & Rendered Slides
+# ==============================================================================
+# Presentation Files & Slides (No PPT / Slide Artifacts)
+# ==============================================================================
 *.pptx
 *.ppt
+*.pot
+*.potx
+*.pps
+*.ppsx
+*.odp
+*.key
 slide_images/
 presentation_assets/
 .codex_ppt_build/
 TwinHealth_AI_CKD_Rubric_Review/
 *.inspect.ndjson
 
-# Large External ML Model Files (Can be re-downloaded via backend/scripts/download_local_models.py)
+# ==============================================================================
+# Large Files & ML Model Weights (> 5MB)
+# Note: Models > 5MB are excluded from git.
+# Re-download on demand using: python backend/scripts/download_local_models.py
+# ==============================================================================
 backend/models/local/stroke/model.joblib
 backend/models/local/liver_disease/skops-xwel2v4p.pkl
-backend/models/local/*/*.pkl
-backend/models/local/heart_disease/model.joblib
 
+# Generic large binary and compressed archive formats (> 5MB safety)
+*.zip
+*.tar
+*.tar.gz
+*.7z
+*.rar
+*.iso
+*.h5
+*.bin
+*.weights
+
+# ==============================================================================
 # OS & Editor Files
+# ==============================================================================
 .DS_Store
 Thumbs.db
 .vscode/
