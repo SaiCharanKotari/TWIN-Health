@@ -11,6 +11,13 @@
  */
 'use strict';
 
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/[&<>"']/g, m => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[m]);
+}
+
 /* ═══════════════════════════════════════════════════════════════
    CONFIG
    ═══════════════════════════════════════════════════════════════ */
@@ -18,12 +25,12 @@
 const DISEASE_ORDER = ['diabetes', 'heart_disease', 'ckd', 'liver_disease', 'stroke'];
 
 const RISK_CONFIG = {
-  high_risk:     { cls:'high',     badge:'HIGH RISK',     color:'var(--risk-high)' },
-  moderate_risk: { cls:'moderate', badge:'MODERATE RISK', color:'var(--risk-moderate)' },
-  low_risk:      { cls:'low',      badge:'LOW RISK',      color:'var(--risk-low)' },
-  positive:      { cls:'high',     badge:'POSITIVE',      color:'var(--risk-high)' },
-  negative:      { cls:'low',      badge:'NEGATIVE',      color:'var(--risk-low)' },
-  unknown:       { cls:'none',     badge:'UNKNOWN',       color:'var(--risk-none)' },
+  high_risk:     { cls:'high',     badge:'HIGH RISK',     color:'#dc2626' },
+  moderate_risk: { cls:'moderate', badge:'MODERATE RISK', color:'#d97706' },
+  low_risk:      { cls:'low',      badge:'LOW RISK',      color:'#10b981' },
+  positive:      { cls:'high',     badge:'POSITIVE',      color:'#dc2626' },
+  negative:      { cls:'low',      badge:'NEGATIVE',      color:'#10b981' },
+  unknown:       { cls:'none',     badge:'UNKNOWN',       color:'#71717a' },
 };
 
 const PATIENT_DISPLAY = [
@@ -114,24 +121,71 @@ function formatFieldValue(key, val) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   RESPONSE NORMALIZATION BOUNDARY
+   ═══════════════════════════════════════════════════════════════ */
+
+function normalizeResultsResponse(raw) {
+  if (!raw || typeof raw !== 'object') {
+    return {
+      patient_summary: null,
+      results: {},
+      summary: {},
+      disclaimer: ''
+    };
+  }
+
+  // Canonical normalization: supports both /api/detection/analyze and /api/assessments/{id}
+  const patientSummary = raw.patient_summary
+    || raw.normalized_inputs
+    || raw.inputs
+    || null;
+
+  const results = raw.results
+    || raw.disease_results
+    || {};
+
+  const summary = raw.summary || {
+    timestamp: raw.created_at || raw.updated_at || new Date().toISOString(),
+    provider: raw.provider || 'local',
+    data_completeness: raw.data_completeness || 0
+  };
+
+  const disclaimer = raw.disclaimer || (
+    'This system is an academic AI-based risk prediction tool and is NOT a substitute for professional medical diagnosis or treatment.'
+  );
+
+  return {
+    ...raw,
+    patient_summary: patientSummary,
+    results: results,
+    summary: summary,
+    disclaimer: disclaimer
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════════
    RENDER RESULTS
    ═══════════════════════════════════════════════════════════════ */
 
 window.renderResults = function(apiResponse) {
-  window.lastApiResponse = apiResponse;
-  renderPatientSummary(apiResponse.patient_summary);
-  renderDiseaseGrid(apiResponse.results);
-  renderPriorityActions(apiResponse.results);
-  renderDisclaimer(apiResponse.disclaimer);
+  const normalized = normalizeResultsResponse(apiResponse);
+  window.lastApiResponse = normalized;
 
-  const ts = new Date(apiResponse.summary?.timestamp || Date.now());
+  renderPatientSummary(normalized.patient_summary);
+  renderDiseaseGrid(normalized.results);
+  renderPriorityActions(normalized.results);
+  renderDisclaimer(normalized.disclaimer);
+
+  const ts = new Date(normalized.summary?.timestamp || Date.now());
   const tsEl = document.getElementById('results-ts');
-  if (tsEl) tsEl.textContent = `Analysed at ${ts.toLocaleTimeString()} · Provider: ${getProviderName(apiResponse.results)}`;
+  if (tsEl) {
+    tsEl.textContent = `Analysed at ${ts.toLocaleTimeString()} · Provider: ${getProviderName(normalized.results)}`;
+  }
 
   // Bind print referral button
   const printBtn = document.getElementById('btn-print-referral');
   if (printBtn) {
-    printBtn.onclick = () => printReferralForm(apiResponse);
+    printBtn.onclick = () => printReferralForm(normalized);
   }
 };
 
@@ -514,16 +568,27 @@ function renderPatientSummary(summary) {
   if (!container) return;
   container.innerHTML = '';
 
+  if (!summary || typeof summary !== 'object' || Object.keys(summary).length === 0) {
+    container.innerHTML = `
+      <div class="summary-empty-state" style="padding:18px 12px; text-align:center; color:var(--text-3, #64748b); font-size:13px; line-height:1.5;">
+        <span style="font-size:22px; display:block; margin-bottom:6px;">📋</span>
+        <strong>No Demographics Recorded</strong><br>
+        Patient demographic and vital metrics were not provided for this assessment.
+      </div>
+    `;
+    return;
+  }
+
   PATIENT_DISPLAY.forEach(({ section, fields }) => {
     const rows = fields
-      .filter(([k]) => summary[k] !== undefined && summary[k] !== null)
+      .filter(([k]) => summary && summary[k] !== undefined && summary[k] !== null)
       .map(([k, label, unit]) => {
         let val = summary[k];
         if (typeof val === 'boolean') val = val ? '✓ Yes' : '✗ No';
         if (typeof val === 'string')  val = val.replace(/_/g, ' ');
         return `<div class="summary-row">
           <span class="summary-key">${label}</span>
-          <span class="summary-val">${val}${unit ? ' <span style="font-size:10px;color:var(--text-3)">${unit}</span>' : ''}</span>
+          <span class="summary-val">${val}${unit ? ' <span style="font-size:10px;color:var(--text-3)">' + unit + '</span>' : ''}</span>
         </div>`;
       });
 
@@ -541,7 +606,19 @@ function renderPatientSummary(summary) {
 
 function renderDiseaseGrid(results) {
   const grid = document.getElementById('disease-grid');
+  if (!grid) return;
   grid.innerHTML = '';
+
+  if (!results || typeof results !== 'object' || Object.keys(results).length === 0) {
+    grid.innerHTML = `
+      <div class="disease-empty-state" style="grid-column:1/-1; padding:32px 20px; text-align:center; background:#ffffff; border:1px dashed #cbd5e1; border-radius:12px; color:#64748b;">
+        <span style="font-size:32px; display:block; margin-bottom:8px;">🩺</span>
+        <h4 style="margin:0 0 6px 0; font-size:16px; color:#1e293b;">No Disease Model Results Available</h4>
+        <p style="margin:0; font-size:13px;">This assessment does not contain executed disease prediction outputs.</p>
+      </div>
+    `;
+    return;
+  }
 
   DISEASE_ORDER.forEach((disease, i) => {
     const r = results[disease];
@@ -680,6 +757,7 @@ function buildDiseaseCard(disease, result) {
 function showDetailPanel(disease, result) {
   const overlay = document.getElementById('detail-overlay');
   const content = document.getElementById('detail-content');
+  if (!overlay || !content) return;
   overlay.classList.remove('hidden');
 
   const pred  = result.prediction || {};
@@ -805,14 +883,21 @@ function showDetailPanel(disease, result) {
   }
 }
 
-document.getElementById('detail-close').addEventListener('click', closeDetailPanel);
-document.getElementById('detail-overlay').addEventListener('click', e => {
-  if (e.target === document.getElementById('detail-overlay')) closeDetailPanel();
-});
+const detailCloseEl = document.getElementById('detail-close');
+if (detailCloseEl) detailCloseEl.addEventListener('click', closeDetailPanel);
+
+const detailOverlayEl = document.getElementById('detail-overlay');
+if (detailOverlayEl) {
+  detailOverlayEl.addEventListener('click', e => {
+    if (e.target === detailOverlayEl) closeDetailPanel();
+  });
+}
+
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetailPanel(); });
 
 function closeDetailPanel() {
-  document.getElementById('detail-overlay').classList.add('hidden');
+  const el = document.getElementById('detail-overlay');
+  if (el) el.classList.add('hidden');
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -894,118 +979,127 @@ function renderPriorityActions(results) {
     <div class="priority-title">⚡ Priority Actions</div>
     <ol class="priority-list" id="priority-list">${actionsHtml}</ol>
 
-    <div class="doctor-action-box">
-      <div class="doctor-action-header">
-        <div class="doctor-action-title">
-          <span>🩺 Doctor / Physician Clinical Review</span>
-          <span class="doctor-verified-badge hidden" id="doctor-verified-badge">✓ Clinically Processed</span>
+    <div class="medication-upload-box" style="margin-top:24px; background:#ffffff; border:1.5px solid #000000; border-radius:12px; padding:22px; color:#000000;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:20px;">💊</span>
+          <strong style="font-size:16px; font-weight:700;">Upload Medication (Optional)</strong>
+          <span style="font-size:11px; padding:3px 8px; border-radius:6px; background:#000000; color:#ffffff; font-weight:600;">Optional</span>
         </div>
-        <span style="font-size:11px;color:var(--text-3);">Attending Clinician Decision Support</span>
+        <span style="font-size:12px; color:#71717a;">Attach prescription slip, image, or PDF for patient records</span>
       </div>
 
-      <div class="doctor-action-body">
-        <div class="doctor-comment-wrap">
-          <textarea id="doctor-comment-input" class="doctor-comment-input" placeholder="Doctor comments: enter clinical remarks, diagnostic confirmation, treatment plan, or patient follow-up advice..." rows="3"></textarea>
-          <div id="doctor-status-msg" class="doctor-status-msg hidden"></div>
-        </div>
+      <p style="font-size:13px; color:#52525b; margin:0 0 16px 0; line-height:1.5;">
+        Upload an optional doctor prescription slip, medication receipt, or document. The file is saved to the patient record and can be downloaded anytime from the patient dashboard.
+      </p>
 
-        <div class="doctor-btn-group">
-          <button type="button" id="btn-reverify-prediction" class="btn-reverify" title="Re-evaluate prediction and cross-check biomarker gating">
-            <span class="btn-icon">🔄</span> Re-verify
-          </button>
-          <button type="button" id="btn-process-prediction" class="btn-processed" title="Confirm clinical review and proceed to personalized daily lifestyle & medication plan">
-            <span class="btn-icon">✓</span> Processed / Proceed →
-          </button>
-        </div>
+      <div id="medication-existing-status" style="margin-bottom:14px;"></div>
+
+      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+        <input type="file" id="input-medication-file" accept="image/*,.pdf,.txt" style="display:none;" />
+        <button type="button" id="btn-browse-medication" class="btn" style="background:#000000; color:#ffffff; border:1px solid #000000; padding:10px 18px; font-size:13px; font-weight:600; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+          <span>📎</span> <span>Choose Medication File</span>
+        </button>
+        <span id="selected-medication-filename" style="font-size:13px; color:#71717a; font-style:italic;">No file selected</span>
+        <button type="button" id="btn-upload-medication" class="btn" style="display:none; background:#000000; color:#ffffff; border:1px solid #000000; padding:10px 18px; font-size:13px; font-weight:600; border-radius:8px; cursor:pointer;">
+          Upload &amp; Save Medication
+        </button>
       </div>
+
+      <div id="medication-upload-status" style="margin-top:14px; display:none;"></div>
     </div>
   `;
 
   box.classList.remove('hidden');
 
-  // Wire doctor action events
-  const commentInput = box.querySelector('#doctor-comment-input');
-  const reverifyBtn = box.querySelector('#btn-reverify-prediction');
-  const processBtn = box.querySelector('#btn-process-prediction');
-  const badge = box.querySelector('#doctor-verified-badge');
-  const statusMsg = box.querySelector('#doctor-status-msg');
+  // Wire Medication Upload
+  const fileInput = box.querySelector('#input-medication-file');
+  const browseBtn = box.querySelector('#btn-browse-medication');
+  const uploadBtn = box.querySelector('#btn-upload-medication');
+  const filenameLabel = box.querySelector('#selected-medication-filename');
+  const statusEl = box.querySelector('#medication-upload-status');
+  const existingStatusEl = box.querySelector('#medication-existing-status');
 
-  // Restore prior doctor input in session if existing
-  if (window.savedDoctorReview) {
-    if (commentInput && window.savedDoctorReview.comment) {
-      commentInput.value = window.savedDoctorReview.comment;
-    }
-    if (window.savedDoctorReview.verified && badge) {
-      badge.classList.remove('hidden');
-      if (statusMsg) {
-        statusMsg.classList.remove('hidden');
-        statusMsg.innerHTML = `✓ Clinically Processed & Verified at ${window.savedDoctorReview.timestamp || 'recently'}`;
+  const assessmentId = window.lastApiResponse?.id || window.lastApiResponse?.assessment_id || new URLSearchParams(window.location.search).get('assessmentId');
+  const patientEmail = window.lastApiResponse?.patient_email || (window.lastApiResponse?.inputs && window.lastApiResponse.inputs.patient_email) || '';
+  const existingMed = window.lastApiResponse?.medication_record;
+
+  if (existingMed && existingStatusEl) {
+    existingStatusEl.innerHTML = `
+      <div style="background:#f4f4f5; border:1px solid #000000; padding:10px 14px; border-radius:8px; font-size:13px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <span>✓ <strong>Current Medication File:</strong> ${escapeHtml(existingMed.filename)}</span>
+        <a href="${escapeHtml(existingMed.download_url)}" download class="btn" style="background:#000000; color:#ffffff; padding:6px 12px; border-radius:6px; font-size:12px; text-decoration:none; font-weight:600;">📥 Download File</a>
+      </div>
+    `;
+  }
+
+  if (browseBtn && fileInput) {
+    browseBtn.onclick = () => fileInput.click();
+    fileInput.onchange = () => {
+      if (fileInput.files && fileInput.files[0]) {
+        filenameLabel.textContent = fileInput.files[0].name;
+        filenameLabel.style.color = '#000000';
+        filenameLabel.style.fontWeight = '600';
+        uploadBtn.style.display = 'inline-block';
       }
-    }
-  }
-
-  // Auto-save doctor comments on typing
-  if (commentInput) {
-    commentInput.addEventListener('input', () => {
-      if (!window.savedDoctorReview) window.savedDoctorReview = {};
-      window.savedDoctorReview.comment = commentInput.value;
-    });
-  }
-
-  // Re-verify button handler
-  if (reverifyBtn) {
-    reverifyBtn.onclick = () => {
-      reverifyBtn.disabled = true;
-      const originalText = reverifyBtn.innerHTML;
-      reverifyBtn.innerHTML = '<span>⏳</span> Verifying...';
-
-      setTimeout(() => {
-        reverifyBtn.disabled = false;
-        reverifyBtn.innerHTML = originalText;
-        if (statusMsg) {
-          statusMsg.classList.remove('hidden');
-          const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-          statusMsg.innerHTML = `🔄 Local ML prediction algorithms & gating re-verified at ${timeStr}`;
-        }
-        if (window.showToast) {
-          window.showToast('✓ Predictions & biomarker thresholds re-verified (0 discrepancies)', 'success');
-        }
-      }, 450);
     };
   }
 
-  // Processed / Proceed button handler
-  if (processBtn) {
-    processBtn.onclick = () => {
-      const commentText = commentInput ? commentInput.value.trim() : '';
-      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-      window.savedDoctorReview = {
-        comment: commentText,
-        verified: true,
-        timestamp: timeStr
-      };
-
-      if (badge) badge.classList.remove('hidden');
-      if (statusMsg) {
-        statusMsg.classList.remove('hidden');
-        statusMsg.innerHTML = `✓ Clinically Processed & Approved by Physician at ${timeStr}. Launching Personalized Care Plan…`;
+  if (uploadBtn && fileInput) {
+    uploadBtn.onclick = async () => {
+      if (!fileInput.files || !fileInput.files[0]) {
+        alert('Please choose a medication or prescription file first.');
+        return;
+      }
+      if (!assessmentId) {
+        alert('Assessment ID missing. Please refresh and try again.');
+        return;
       }
 
-      if (window.showToast) {
-        window.showToast('✓ Assessment Processed! Opening Personalized Daily Care Plan…', 'success');
-      }
+      uploadBtn.disabled = true;
+      uploadBtn.textContent = '⏳ Uploading…';
 
-      // Transition smoothly to the Care Plan view
-      setTimeout(() => {
-        if (window.loadAndShowCarePlan) {
-          window.loadAndShowCarePlan(
-            window.lastApiResponse?.patient_summary || {},
-            window.lastApiResponse?.results || {},
-            commentText
-          );
+      try {
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+        if (patientEmail) formData.append('patient_email', patientEmail);
+
+        const res = await fetch(`/api/assessments/${encodeURIComponent(assessmentId)}/medications/upload`, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || `Server returned ${res.status}`);
         }
-      }, 400);
+
+        const data = await res.json();
+        uploadBtn.textContent = '✓ Uploaded';
+        uploadBtn.disabled = false;
+
+        statusEl.style.display = 'block';
+        statusEl.innerHTML = `
+          <div style="background:#ffffff; border:1.5px solid #000000; color:#000000; padding:12px 16px; border-radius:8px; font-size:13px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div>
+              <strong>✓ Medication File Saved Successfully!</strong><br>
+              <span style="color:#52525b;">${escapeHtml(data.filename)} — Available in Patient Portal</span>
+            </div>
+            <a href="${escapeHtml(data.download_url)}" download class="btn" style="background:#000000; color:#ffffff; padding:7px 14px; border-radius:6px; font-size:12px; text-decoration:none; font-weight:700;">
+              📥 Download File
+            </a>
+          </div>
+        `;
+
+        if (window.showToast) {
+          window.showToast('✓ Medication file uploaded and saved!', 'success');
+        }
+      } catch (err) {
+        uploadBtn.disabled = false;
+        uploadBtn.textContent = 'Retry Upload';
+        statusEl.style.display = 'block';
+        statusEl.innerHTML = `<span style="color:#000000; font-weight:600;">⚠ Upload failed: ${escapeHtml(err.message)}</span>`;
+      }
     };
   }
 }

@@ -1,27 +1,33 @@
 @echo off
-title MediRisk — Clinical Assessment Server
+title TwinHealth AI — Digital Twin Clinical Platform
 
-:: Check .env exists
+echo ========================================================
+echo    TwinHealth AI — Multi-Disease Clinical Platform
+echo ========================================================
+echo.
+
+:: Auto-create .env if not found
 if not exist ".env" (
-    echo.
-    echo  [!] .env file not found.
-    echo  [!] Copy .env.example to .env and add your Gemini API key.
-    echo.
-    echo      copy .env.example .env
-    echo      Then edit .env and set GEMINI_API_KEY=your_key_here
-    echo.
-    pause
-    exit /b 1
+    echo [*] Creating default local .env file...
+    echo DEFAULT_PROVIDER=local > .env
+    echo ENVIRONMENT=development >> .env
+    echo HOST=0.0.0.0 >> .env
+    echo PORT=8000 >> .env
 )
 
-:: Install dependencies (only if needed)
+:: Install dependencies
 echo [*] Checking Python dependencies...
 pip install -r requirements.txt --quiet
 
 echo.
-echo [*] Starting MediRisk server...
-echo [*] Open your browser at: http://localhost:8000
-echo [*] Press Ctrl+C to stop.
+echo [*] Starting TwinHealth AI server with Local ML Models...
+echo.
+echo    [+] Patient Intake Portal:   http://localhost:8000
+echo    [+] Physician Workspace:      http://localhost:8000/doctor
+echo    [+] Patient Care Tracker:     http://localhost:8000/patient
+echo    [+] API Health Check:         http://localhost:8000/api/models/health
+echo.
+echo [*] Press Ctrl+C to terminate.
 echo.
 
 cd backend

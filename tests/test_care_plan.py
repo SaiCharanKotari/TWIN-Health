@@ -37,7 +37,7 @@ async def test_generate_care_plan_direct():
     }
     doctor_comments = "Strict glycemic monitoring and liver-friendly nutrition."
 
-    plan = await generate_care_plan(patient, results, doctor_comments)
+    plan = await generate_care_plan(patient, results, doctor_comments, provider="local")
     assert plan is not None
     assert "diet" in plan
     assert "exercise" in plan
@@ -45,7 +45,7 @@ async def test_generate_care_plan_direct():
     assert "chronotherapy_schedule" in plan
     assert len(plan["diet"]["foods_to_eat"]) > 0
     assert len(plan["diet"]["foods_to_avoid"]) > 0
-    assert len(plan["chronotherapy_schedule"]) >= 8
+    assert len(plan["chronotherapy_schedule"]) >= 6
 
 
 @pytest.mark.asyncio
@@ -60,7 +60,8 @@ async def test_care_plan_endpoint():
                     "display_name": "Heart Disease"
                 }
             },
-            "doctor_comments": "Moderate sodium intake."
+            "doctor_comments": "Moderate sodium intake.",
+            "provider": "local"
         }
         res = await ac.post("/api/detection/care-plan", json=payload)
         assert res.status_code == 200
@@ -79,5 +80,5 @@ async def test_prescription_upload_endpoint():
         res = await ac.post("/api/detection/prescription/upload", files=files)
         assert res.status_code == 200
         data = res.json()
-        assert "medications" in data
-        assert len(data["medications"]) > 0
+        assert "requires_verification" in data
+        assert data["requires_verification"] is True

@@ -1,0 +1,2 @@
+# Data directory for TwinHealth AI local JSON persistence
+# Contains users.json, patients.json, assessments.json, care_plans.json, activity_completions.json

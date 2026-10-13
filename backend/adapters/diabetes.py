@@ -1,4 +1,4 @@
-"""adapters/diabetes.py — Diabetes disease adapter."""
+"""adapters/diabetes.py — Type 2 Diabetes disease adapter."""
 from __future__ import annotations
 from typing import Any
 from adapters.base import DiseaseAdapter
@@ -10,19 +10,23 @@ class DiabetesAdapter(DiseaseAdapter):
     disease = "diabetes"
 
     def build_input(self, patient: PatientData, provider: Any = None) -> dict[str, Any]:
-        """Extract diabetes-relevant fields. Only include non-None values."""
+        """Extract diabetes-relevant fields without fabricating unmeasured clinical biomarkers."""
         if provider and provider.name == "local":
-            # Estimate glucose from HbA1c if fasting_glucose is missing
+            # Extract glucose; HbA1c conversion only if glucose is unmeasured
             glucose_val = patient.fasting_glucose or patient.random_glucose
             if glucose_val is None and patient.hba1c:
                 glucose_val = round(patient.hba1c * 28.7 - 46.7, 1)
-            
-            bp_val = patient.diastolic_bp or (round(patient.systolic_bp * 0.65, 1) if patient.systolic_bp else None)
-            bmi_val = patient.bmi or (round(patient.weight_kg / ((patient.height_cm/100)**2), 1) if patient.height_cm and patient.weight_kg else None)
-            pedigree_val = 0.65 if patient.family_history_diabetes else 0.20
-            
-            df_dict = {
-                "pregnancies": 0,
+
+            bp_val = patient.diastolic_bp
+            bmi_val = patient.bmi or (
+                round(patient.weight_kg / ((patient.height_cm / 100) ** 2), 1)
+                if patient.height_cm and patient.weight_kg else None
+            )
+            pedigree_val = 0.65 if patient.family_history_diabetes else None
+            pregnancies_val = 0 if patient.sex and str(patient.sex).lower() == "male" else None
+
+            return {
+                "pregnancies": pregnancies_val,
                 "glucose": glucose_val,
                 "blood_pressure": bp_val,
                 "skin_thickness": None,
@@ -31,7 +35,6 @@ class DiabetesAdapter(DiseaseAdapter):
                 "diabetes_pedigree_function": pedigree_val,
                 "age": patient.age,
             }
-            return df_dict
 
         p = patient.model_dump()
         fields = [
@@ -46,8 +49,8 @@ class DiabetesAdapter(DiseaseAdapter):
 
     def normalize_output(self, raw: dict, features_used: list[str], patient: PatientData = None) -> dict:
         config = MODEL_REGISTRY[self.disease]
-        result = self._base_result()
-        completeness, avail, total = self._compute_completeness(patient, config)
+        result = self._base_result(patient)
+        completeness, avail, total = self._compute_completeness(patient, config) if patient else (0.0, 0, 0)
         p_dict = patient.model_dump() if patient else {}
 
         label = raw.get("label", "unknown")

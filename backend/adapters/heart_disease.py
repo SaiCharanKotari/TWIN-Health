@@ -1,4 +1,4 @@
-"""adapters/heart_disease.py — Heart disease adapter."""
+"""adapters/heart_disease.py — Cardiovascular disease adapter."""
 from __future__ import annotations
 from typing import Any
 from adapters.base import DiseaseAdapter
@@ -10,35 +10,28 @@ class HeartDiseaseAdapter(DiseaseAdapter):
     disease = "heart_disease"
 
     def build_input(self, patient: PatientData, provider: Any = None) -> dict[str, Any]:
-        """Extract heart-disease-relevant fields. Only include non-None values."""
+        """Extract heart disease fields using genuine clinical measurements."""
         if provider and provider.name == "local":
-            sex_val = 1 if patient.sex and str(patient.sex).lower() == 'male' else 0
-            fbs_val = 1 if patient.fasting_glucose and patient.fasting_glucose > 120 else 0
-            
-            # Clinical mapping for Cleveland features
-            has_hd = bool(patient.heart_disease_history)
-            cp_val = 4 if has_hd else (2 if patient.hypertension else 3)
-            restecg_val = 1 if (has_hd or (patient.systolic_bp and patient.systolic_bp >= 150)) else 0
-            exang_val = 1 if has_hd else 0
-            oldpeak_val = 1.8 if has_hd else 0.0
-            slope_val = 2 if has_hd else 1
-            
-            df_dict = {
+            sex_val = 1 if patient.sex and str(patient.sex).lower() == "male" else 0
+            fbs_val = None
+            if patient.fasting_glucose is not None:
+                fbs_val = 1 if patient.fasting_glucose > 120 else 0
+
+            return {
                 "age": patient.age,
                 "sex": sex_val,
-                "cp": cp_val,
+                "cp": None,
                 "trestbps": patient.systolic_bp,
                 "chol": patient.total_cholesterol,
                 "fbs": fbs_val,
-                "restecg": restecg_val,
-                "thalach": patient.heart_rate or 145.0,
-                "exang": exang_val,
-                "oldpeak": oldpeak_val,
-                "slope": slope_val,
+                "restecg": None,
+                "thalach": patient.heart_rate,
+                "exang": None,
+                "oldpeak": None,
+                "slope": None,
                 "ca": None,
                 "thal": None,
             }
-            return df_dict
 
         p = patient.model_dump()
         fields = [
@@ -53,8 +46,8 @@ class HeartDiseaseAdapter(DiseaseAdapter):
 
     def normalize_output(self, raw: dict, features_used: list[str], patient: PatientData = None) -> dict:
         config = MODEL_REGISTRY[self.disease]
-        result = self._base_result()
-        completeness, avail, total = self._compute_completeness(patient, config)
+        result = self._base_result(patient)
+        completeness, avail, total = self._compute_completeness(patient, config) if patient else (0.0, 0, 0)
         p_dict = patient.model_dump() if patient else {}
 
         label = raw.get("label", "unknown")

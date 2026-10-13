@@ -10,14 +10,17 @@ class LiverDiseaseAdapter(DiseaseAdapter):
     disease = "liver_disease"
 
     def build_input(self, patient: PatientData, provider: Any = None) -> dict[str, Any]:
+        """Extract liver disease fields using genuine biochemical measurements."""
         if provider and provider.name == "local":
-            gender_val = 1 if patient.sex and str(patient.sex).lower() == 'male' else 0
-            
+            gender_val = 1 if patient.sex and str(patient.sex).lower() == "male" else (
+                0 if patient.sex and str(patient.sex).lower() == "female" else None
+            )
+
             ag_ratio = None
-            if patient.albumin and patient.total_protein and patient.total_protein > patient.albumin:
+            if patient.albumin is not None and patient.total_protein is not None and patient.total_protein > patient.albumin:
                 ag_ratio = round(patient.albumin / max(0.5, (patient.total_protein - patient.albumin)), 2)
-            
-            df_dict = {
+
+            return {
                 "age": patient.age,
                 "gender": gender_val,
                 "total_bilirubin": patient.total_bilirubin,
@@ -29,7 +32,6 @@ class LiverDiseaseAdapter(DiseaseAdapter):
                 "albumin": patient.albumin,
                 "albumin_and_globulin_ratio": ag_ratio,
             }
-            return df_dict
 
         p = patient.model_dump()
         fields = [
@@ -44,8 +46,8 @@ class LiverDiseaseAdapter(DiseaseAdapter):
 
     def normalize_output(self, raw: dict, features_used: list[str], patient: PatientData = None) -> dict:
         config = MODEL_REGISTRY[self.disease]
-        result = self._base_result()
-        completeness, avail, total = self._compute_completeness(patient, config)
+        result = self._base_result(patient)
+        completeness, avail, total = self._compute_completeness(patient, config) if patient else (0.0, 0, 0)
         p_dict = patient.model_dump() if patient else {}
 
         label = raw.get("label", "unknown")

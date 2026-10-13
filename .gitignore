@@ -63,3 +63,12 @@ backend/models/local/liver_disease/skops-xwel2v4p.pkl
 Thumbs.db
 .vscode/
 .idea/
+
+# ==============================================================================
+# Local Data Storage & Databases
+# ==============================================================================
+data/*.json
+!data/.gitkeep
+*.db
+*.db-wal
+*.db-shm

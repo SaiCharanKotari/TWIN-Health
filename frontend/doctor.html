@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TwinHealth AI — Doctor Clinical Workspace</title>
+  <meta name="description" content="Clinical review and care-plan approval workspace for attending physicians." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css?v=2026.12" />
+</head>
+<body class="clinical-theme">
+  <div id="app">
+
+    <!-- ── Top Navigation Bar ─────────────────────────────────────────── -->
+    <header class="app-nav-header">
+      <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+        <div class="top-left-nav" style="display:inline-flex; align-items:center; gap:8px;">
+          <a href="/" class="nav-control-btn btn-home" style="display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:8px; border:1px solid #cbd5e1; background:#ffffff; color:#334155; font-size:13px; font-weight:600; text-decoration:none; cursor:pointer;" title="Return to Home">
+            <span>🏠</span><span>Home</span>
+          </a>
+          <button type="button" class="nav-control-btn btn-logout" onclick="twinHealthLogout()" style="display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:8px; border:1px solid #fecaca; background:#fff5f5; color:#dc2626; font-size:13px; font-weight:600; cursor:pointer;" title="Log out of session">
+            <span>🚪</span><span>Logout</span>
+          </button>
+        </div>
+        <div class="nav-brand">
+          <a href="/" class="brand-link">
+            <div class="brand-badge-icon">✚</div>
+            <div class="brand-titles">
+              <span class="brand-title-main">TwinHealth <strong>AI</strong></span>
+              <span class="brand-title-sub">Physician Clinical Portal</span>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <nav class="nav-links">
+        <a href="/" class="nav-item">Intake &amp; Assessment</a>
+        <a href="/doctor" class="nav-item active">Doctor Workspace</a>
+        <a href="/patient" class="nav-item">Patient Dashboard</a>
+      </nav>
+
+      <div class="nav-actions">
+        <div class="clinician-badge">
+          <span class="badge-dot online"></span>
+          <span class="clinician-name" id="clinician-name">Dr. Sarah Mitchell, MD</span>
+        </div>
+        <button class="btn btn-sm btn-outline" id="btn-refresh-queue" title="Refresh case queue">↻ Refresh</button>
+      </div>
+    </header>
+
+    <!-- ── Main Clinician Workspace ──────────────────────────────────── -->
+    <main class="doctor-workspace">
+
+      <!-- ── KPI Metric Cards ────────────────────────────────────────── -->
+      <section class="kpi-grid" id="kpi-grid">
+        <div class="kpi-card" id="kpi-pending-card">
+          <div class="kpi-icon-wrap amber">⏳</div>
+          <div class="kpi-details">
+            <span class="kpi-value" id="kpi-pending">0</span>
+            <span class="kpi-label">Pending Reviews</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon-wrap teal">✓</div>
+          <div class="kpi-details">
+            <span class="kpi-value" id="kpi-reviewed">0</span>
+            <span class="kpi-label">Reviewed Cases</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon-wrap blue">📋</div>
+          <div class="kpi-details">
+            <span class="kpi-value" id="kpi-plans">0</span>
+            <span class="kpi-label">Approved Care Plans</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon-wrap slate">👥</div>
+          <div class="kpi-details">
+            <span class="kpi-value" id="kpi-patients">0</span>
+            <span class="kpi-label">Total Patients</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Workspace Layout: Queue + Inspector ──────────────────────── -->
+      <div class="doctor-layout">
+
+        <!-- ── Left Column: Patient Case Queue ────────────────────────── -->
+        <section class="queue-panel">
+          <div class="panel-header">
+            <div class="panel-title-wrap">
+              <h2 class="panel-title">Clinical Review Queue</h2>
+              <span class="case-counter" id="case-counter">0 Cases</span>
+            </div>
+
+            <!-- Queue Search & Filters -->
+            <div class="queue-controls">
+              <input type="text" id="queue-search" class="search-input" placeholder="Search patient, ID…" />
+              <div class="filter-tabs" id="filter-tabs">
+                <button class="filter-tab active" data-filter="all">All</button>
+                <button class="filter-tab" data-filter="pending">Pending</button>
+                <button class="filter-tab" data-filter="reviewed">Reviewed</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="queue-table-container">
+            <table class="queue-table">
+              <thead>
+                <tr>
+                  <th>Patient</th>
+                  <th>Assessment Date</th>
+                  <th>Detected Risks</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="queue-tbody">
+                <tr><td colspan="5" class="loading-td">Loading clinical cases…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ── Right Column: Selected Case Inspector ──────────────────── -->
+        <section class="inspector-panel" id="inspector-panel">
+          <div class="inspector-empty" id="inspector-empty">
+            <div class="empty-icon">📁</div>
+            <h3>Select a Patient Case</h3>
+            <p>Click any case from the queue on the left to review laboratory measurements, evaluate multi-disease model predictions, draft clinician notes, and approve care plans.</p>
+          </div>
+
+          <div class="inspector-content hidden" id="inspector-content">
+            <!-- Populated dynamically by doctor.js -->
+          </div>
+        </section>
+
+      </div><!-- /.doctor-layout -->
+
+    </main>
+
+    <!-- ── Care Plan Modal ───────────────────────────────────────────── -->
+    <div id="modal-care-plan" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-title" id="modal-plan-title">Care Plan Review &amp; Approval</h3>
+            <p class="modal-sub" id="modal-plan-patient">Reviewing lifestyle protocol and clinical guidance</p>
+          </div>
+          <button class="btn-close" id="btn-close-plan-modal">✕</button>
+        </div>
+        <div class="modal-body" id="modal-plan-body">
+          <!-- Rendered dynamically -->
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="btn-cancel-plan">Cancel</button>
+          <button class="btn btn-primary" id="btn-publish-plan">✓ Approve &amp; Publish to Patient Dashboard</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /#app -->
+
+  <script>
+    function twinHealthLogout() {
+      try {
+        sessionStorage.removeItem('twinhealth_user');
+      } catch (e) {}
+      window.location.href = '/login';
+    }
+  </script>
+  <script src="/static/doctor.js?v=2026.10"></script>
+</body>
+</html>

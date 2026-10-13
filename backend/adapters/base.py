@@ -1,18 +1,12 @@
 """
-adapters/base.py — Abstract DiseaseAdapter base class.
-
-Each disease has its own adapter that:
-  1. Checks whether the patient has sufficient data.
-  2. Maps universal patient fields to model-specific field names.
-  3. Calls the provider.
-  4. Normalises the provider response into our standard result format.
+adapters/base.py — Abstract DiseaseAdapter base class with strict sufficiency enforcement.
 """
 from __future__ import annotations
 
 import time
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, List, Tuple
 
 from models.registry import MODEL_REGISTRY
 from schema import PatientData
@@ -33,7 +27,7 @@ class DiseaseAdapter(ABC):
 
     # ── Sufficiency check ──────────────────────────────────────────────────────
 
-    def check_sufficiency(self, patient: PatientData) -> tuple[bool, list[str]]:
+    def check_sufficiency(self, patient: PatientData) -> Tuple[bool, List[str]]:
         """
         Returns (is_sufficient, missing_required_features).
 
@@ -44,7 +38,7 @@ class DiseaseAdapter(ABC):
         """
         config = MODEL_REGISTRY[self.disease]
         patient_dict = patient.model_dump()
-        missing: list[str] = []
+        missing: List[str] = []
 
         # Hard required fields
         for field in config.get("required_features", []):
@@ -72,14 +66,13 @@ class DiseaseAdapter(ABC):
     def build_input(self, patient: PatientData, provider: "BaseProvider" = None) -> dict[str, Any]:
         """
         Extract and map patient fields for this disease's model.
-        Only include non-None values. Apply feature_mapping if model uses
-        different field names.
+        Only include valid mapped patient inputs. Do not invent missing biomarkers.
         """
 
     # ── Output normalisation ───────────────────────────────────────────────────
 
     @abstractmethod
-    def normalize_output(self, raw: dict, features_used: list[str]) -> dict:
+    def normalize_output(self, raw: dict, features_used: list[str], patient: PatientData = None) -> dict:
         """
         Convert raw provider response into the standard result format.
         NEVER fabricate values that the model did not return.
@@ -94,13 +87,35 @@ class DiseaseAdapter(ABC):
         is_sufficient: bool = True,
         missing: list[str] = None,
     ) -> dict:
-        """Run the full prediction pipeline for this disease."""
+        """Run prediction pipeline or return explicit insufficient data status."""
         from utils.logger import log_prediction_start, log_prediction_complete, log_api_error
 
         missing = missing or []
         config    = MODEL_REGISTRY[self.disease]
         start_ms  = time.time()
-        features  = self.build_input(patient, provider)
+
+        # If required features are absent:
+        if not is_sufficient:
+            # Mock provider allows preliminary heuristic estimates for demo testing
+            if provider and getattr(provider, "name", "") == "mock":
+                features = self.build_input(patient, provider)
+                feat_keys = list(features.keys()) if isinstance(features, dict) else []
+                raw = await provider.predict(
+                    disease=self.disease,
+                    features=features,
+                    model_config=config,
+                )
+                result = self.normalize_output(raw, feat_keys, patient)
+                result["status"] = "preliminary"
+                result["missing_features"] = missing
+                result["metadata"]["processing_time_ms"] = int((time.time() - start_ms) * 1000)
+                result["metadata"]["timestamp"] = datetime.now(timezone.utc).isoformat()
+                result["disclaimer"] = DISCLAIMER
+                return result
+            # Local ML strictly returns insufficient_data without fabricating input
+            return self._insufficient_result(missing, patient)
+
+        features = self.build_input(patient, provider)
         if isinstance(features, dict) and "feature_names" in features and "feature_array" in features:
             feat_keys = list(features["feature_names"])
         else:
@@ -115,12 +130,15 @@ class DiseaseAdapter(ABC):
                 model_config=config,
             )
             result = self.normalize_output(raw, feat_keys, patient)
-            result["status"] = "success" if is_sufficient else "preliminary"
-            if not is_sufficient:
-                result["missing_features"] = missing
+            result["status"] = "success"
+        except ValueError as val_err:
+            if "not available" in str(val_err).lower():
+                result = self._unavailable_result(str(val_err), patient)
+            else:
+                result = self._error_result(str(val_err), patient)
         except Exception as exc:
             log_api_error(self.disease, provider.name, type(exc).__name__, str(exc))
-            result = self._error_result(str(exc))
+            result = self._error_result(str(exc), patient)
 
         result["metadata"]["processing_time_ms"] = int((time.time() - start_ms) * 1000)
         result["metadata"]["timestamp"] = datetime.now(timezone.utc).isoformat()
@@ -135,8 +153,14 @@ class DiseaseAdapter(ABC):
 
     # ── Standard result builders ───────────────────────────────────────────────
 
-    def _base_result(self) -> dict:
+    def _base_result(self, patient: PatientData = None) -> dict:
         config = MODEL_REGISTRY[self.disease]
+        completeness = 0.0
+        avail = 0
+        total = 0
+        if patient:
+            completeness, avail, total = self._compute_completeness(patient, config)
+
         return {
             "disease":      self.disease,
             "display_name": config["display_name"],
@@ -145,35 +169,49 @@ class DiseaseAdapter(ABC):
             "prediction":   None,
             "model":        None,
             "input_summary": {
-                "features_used":    [],
-                "missing_optional": [],
-                "data_completeness": 0.0,
-                "total_required":   len(config.get("required_features", [])),
-                "available_required": 0,
+                "features_used":            [],
+                "features_used_count":      0,
+                "features_provided_values": {},
+                "required_features":        config.get("required_features", []),
+                "required_any_of":          config.get("required_any_of", []),
+                "preferred_features":       config.get("preferred_features", []),
+                "missing_optional":         [],
+                "data_completeness":        completeness,
+                "total_required":           total,
+                "available_required":       avail,
             },
             "explanation": {"available": False, "text": None, "factors": []},
             "metadata":    {"timestamp": "", "processing_time_ms": 0},
             "disclaimer":  DISCLAIMER,
         }
 
-    def _insufficient_result(self, missing: list[str]) -> dict:
+    def _insufficient_result(self, missing: list[str], patient: PatientData = None) -> dict:
         from utils.logger import log_insufficient_data
         log_insufficient_data(self.disease, missing)
         config = MODEL_REGISTRY[self.disease]
-        result = self._base_result()
+        result = self._base_result(patient)
         result["status"] = "insufficient_data"
         result["missing_features"] = missing
         result["message"] = (
-            f"{config['display_name']} assessment requires additional data. "
-            f"Missing: {', '.join(missing)}."
+            f"{config['display_name']} assessment requires mandatory clinical data. "
+            f"Missing: {', '.join(missing)}. "
+            f"Please provide these measurements or schedule a clinical test for evaluation."
         )
         result["metadata"]["timestamp"] = datetime.now(timezone.utc).isoformat()
         return result
 
-    def _error_result(self, message: str) -> dict:
-        result = self._base_result()
-        result["status"] = "api_error"
-        result["error_message"] = "Prediction service encountered an error. Please try again."
+    def _unavailable_result(self, message: str, patient: PatientData = None) -> dict:
+        config = MODEL_REGISTRY[self.disease]
+        result = self._base_result(patient)
+        result["status"] = "model_unavailable"
+        result["error_message"] = f"Local pipeline for {config['display_name']} is currently unavailable on disk."
+        result["metadata"]["timestamp"] = datetime.now(timezone.utc).isoformat()
+        return result
+
+    def _error_result(self, message: str, patient: PatientData = None) -> dict:
+        result = self._base_result(patient)
+        result["status"] = "inference_error"
+        result["error_message"] = "Local inference pipeline encountered an unexpected calculation error."
         result["metadata"]["timestamp"] = datetime.now(timezone.utc).isoformat()
         return result
 
@@ -195,4 +233,4 @@ class DiseaseAdapter(ABC):
         if total_req == 0:
             return 1.0, 0, 0
 
-        return avail / total_req, avail, total_req
+        return round(avail / total_req, 2), avail, total_req

@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TwinHealth AI — Clinician Activity Monitoring</title>
+  <meta name="description" content="Physician monitoring interface for patient daily chronotherapy schedule and reported adherence." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css?v=2026.10" />
+  <style>
+    body {
+      background-color: #f8fafc;
+      color: #0f172a;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+    }
+    .top-nav {
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+      color: #0f172a;
+      padding: 14px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #0f172a;
+    }
+    .nav-btn {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .nav-btn:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+    .nav-btn-primary {
+      background: linear-gradient(135deg, #0d9488, #0f766e);
+      border-color: #0f766e;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(13, 148, 136, 0.25);
+    }
+    .nav-btn-primary:hover {
+      background: linear-gradient(135deg, #0f766e, #115e59);
+      color: #ffffff;
+    }
+    .page-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    /* Header Card */
+    .patient-header-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+    .patient-info h1 {
+      margin: 0 0 6px;
+      font-size: 22px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .patient-meta-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: #64748b;
+    }
+    .patient-meta-row strong { color: #1e293b; }
+    .status-badge-approved {
+      background: #f4f4f5;
+      color: #18181b;
+      border: 1px solid #e4e4e7;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    /* KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .kpi-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 18px 20px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    }
+    .kpi-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #64748b;
+      margin-bottom: 6px;
+    }
+    .kpi-val {
+      font-size: 26px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.2;
+    }
+    .kpi-sub {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+    /* Date Selector & Controls */
+    .control-strip {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .date-nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .date-input {
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 13px;
+      color: #0f172a;
+    }
+    /* Schedule Tasks */
+    .tasks-container {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .period-group {
+      margin-bottom: 24px;
+    }
+    .period-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #000000;
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .task-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      background: #f8fafc;
+      transition: all 0.15s ease;
+    }
+    .task-row.completed {
+      background: #f4f4f5;
+      border-color: #d4d4d8;
+    }
+    .task-left {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .task-icon-box {
+      font-size: 20px;
+      line-height: 1;
+      margin-top: 2px;
+    }
+    .task-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 2px;
+    }
+    .task-desc {
+      font-size: 13px;
+      color: #64748b;
+    }
+    .task-meta {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+      font-size: 11px;
+    }
+    .meta-time {
+      background: #e2e8f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #334155;
+      font-weight: 500;
+    }
+    .meta-cat {
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #64748b;
+      text-transform: capitalize;
+    }
+    .badge-done {
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .badge-pending {
+      background: #f1f5f9;
+      color: #64748b;
+      border: 1px solid #e2e8f0;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    /* Weekly Table */
+    .weekly-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      font-size: 13px;
+    }
+    .weekly-table th {
+      text-align: left;
+      padding: 10px 12px;
+      background: #f8fafc;
+      border-bottom: 2px solid #e2e8f0;
+      color: #64748b;
+      font-weight: 600;
+    }
+    .weekly-table td {
+      padding: 12px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .prog-bar-container {
+      width: 120px;
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    .prog-bar-fill {
+      height: 100%;
+      background: #0d9488;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="top-nav">
+    <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+      <div class="top-left-nav" style="display:inline-flex; align-items:center; gap:8px;">
+        <a href="/" class="nav-btn" style="background:#ffffff; color:#334155; border:1px solid #cbd5e1;" title="Return to Home">
+          <span>🏠</span><span>Home</span>
+        </a>
+        <button type="button" class="nav-btn" onclick="twinHealthLogout()" style="background:#fff5f5; border:1px solid #fecaca; color:#dc2626;" title="Log out of session">
+          <span>🚪</span><span>Logout</span>
+        </button>
+      </div>
+      <a href="/" class="nav-brand">
+        <div style="background:linear-gradient(135deg, #0d9488, #0f766e); color:#ffffff; width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; box-shadow:0 2px 6px rgba(13,148,136,0.3);">✚</div>
+        <span style="font-weight:700; font-size:16px; color:#0f172a;">TwinHealth <span style="color:#0d9488; font-weight:800;">AI</span> <span style="color:#64748b; font-weight:500; font-size:12px;">| Patient Activity Monitor</span></span>
+      </a>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <button class="nav-btn nav-btn-primary" onclick="loadActivityData(true)" id="btn-refresh">
+        <span>⟳ Refresh Activity</span>
+      </button>
+      <a href="#" id="link-back-results" class="nav-btn">← Back to Results</a>
+      <a href="/input" class="nav-btn">Doctor Input</a>
+    </div>
+  </div>
+
+  <div class="page-container">
+
+    <!-- Patient Header Card -->
+    <div class="patient-header-card">
+      <div class="patient-info">
+        <h1 id="header-patient-name">Patient Activity Tracking</h1>
+        <div class="patient-meta-row">
+          <span>Email: <strong id="header-patient-email">patient@example.com</strong></span>
+          <span>Linked Assessment: <strong id="header-assessment-id">asm_...</strong></span>
+          <span>Plan Version: <strong id="header-plan-version">v1</strong></span>
+          <span class="status-badge-approved" id="header-plan-status">✓ Approved Care Plan</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:12px; color:#64748b; text-align:right;">Last Synchronized:</div>
+        <div id="last-sync-time" style="font-size:13px; font-weight:600; color:#0f172a;">Just now</div>
+      </div>
+    </div>
+
+    <!-- Adherence KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Today's Adherence</div>
+        <div class="kpi-val" id="kpi-today-pct">0%</div>
+        <div class="kpi-sub" id="kpi-today-count">0 of 0 tasks completed</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">7-Day Weekly Adherence</div>
+        <div class="kpi-val" id="kpi-weekly-pct">0%</div>
+        <div class="kpi-sub" id="kpi-weekly-count">Total scheduled goals</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Exercise Regimen</div>
+        <div class="kpi-val" id="kpi-exercise-pct">0%</div>
+        <div class="kpi-sub" id="kpi-exercise-count">Zone-2 cardio sessions</div>
+      </div>
+      <div class="kpi-card" id="kpi-card-meds">
+        <div class="kpi-label">Prescription Adherence</div>
+        <div class="kpi-val" id="kpi-meds-pct">—</div>
+        <div class="kpi-sub" id="kpi-meds-count">Prescribed medication tasks</div>
+      </div>
+    </div>
+
+    <!-- Date Strip & Quick Filter -->
+    <div class="control-strip">
+      <div class="date-nav">
+        <span style="font-size:13px; font-weight:600; color:#475569;">Selected Tracking Date:</span>
+        <input type="date" id="input-date" class="date-input" onchange="handleDateChange()" />
+        <button class="nav-btn" onclick="setQuickDate(0)">Today</button>
+        <button class="nav-btn" onclick="setQuickDate(-1)">Yesterday</button>
+      </div>
+      <div style="font-size:12px; color:#64748b;">
+        <span>ℹ️ Auto-refreshes every 10s. Changes made in patient tab appear here automatically.</span>
+      </div>
+    </div>
+
+    <!-- Tasks Breakdown by Chronotherapy Periods -->
+    <div class="tasks-container">
+      <div class="section-title">
+        <span>⏰</span>
+        <span>Scheduled Chronotherapy Activities &amp; Patient-Reported Completion</span>
+      </div>
+
+      <div id="tasks-list-root">
+        <div style="text-align:center; padding:32px; color:#64748b;">Loading activity schedule…</div>
+      </div>
+
+      <!-- Weekly Matrix Section -->
+      <div style="margin-top:36px; padding-top:24px; border-top:1px solid #e2e8f0;">
+        <div class="section-title">
+          <span>📊</span>
+          <span>7-Day Weekly Adherence History</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="weekly-table">
+            <thead>
+              <tr>
+                <th>Day</th>
+                <th>Date</th>
+                <th>Tasks Completed</th>
+                <th>Adherence Score</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="weekly-table-body">
+              <tr><td colspan="5" style="text-align:center; color:#94a3b8;">Loading weekly history…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    function twinHealthLogout() {
+      try {
+        sessionStorage.removeItem('twinhealth_user');
+      } catch (e) {}
+      window.location.href = '/login';
+    }
+
+    let currentPatientEmail = '';
+    let currentAssessmentId = '';
+    let selectedDate = new Date().toISOString().split('T')[0];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      currentPatientEmail = params.get('patientEmail') || '';
+      currentAssessmentId = params.get('assessmentId') || '';
+
+      if (currentAssessmentId) {
+        document.getElementById('link-back-results').href = `/results?assessmentId=${encodeURIComponent(currentAssessmentId)}`;
+      } else {
+        document.getElementById('link-back-results').href = `/input`;
+      }
+
+      document.getElementById('input-date').value = selectedDate;
+      loadActivityData();
+
+      // Lightweight polling every 10 seconds to sync separate patient browser activity
+      setInterval(() => {
+        loadActivityData(false);
+      }, 10000);
+    });
+
+    function setQuickDate(offsetDays) {
+      const d = new Date();
+      d.setDate(d.getDate() + offsetDays);
+      selectedDate = d.toISOString().split('T')[0];
+      document.getElementById('input-date').value = selectedDate;
+      loadActivityData(true);
+    }
+
+    function handleDateChange() {
+      selectedDate = document.getElementById('input-date').value;
+      loadActivityData(true);
+    }
+
+    async function loadActivityData(showSpinner = false) {
+      if (!currentPatientEmail) {
+        document.getElementById('tasks-list-root').innerHTML = `
+          <div style="padding:24px; color:#b91c1c; text-align:center;">
+            Missing patientEmail query parameter. Please access from /results?assessmentId=&lt;id&gt;
+          </div>`;
+        return;
+      }
+
+      const refreshBtn = document.getElementById('btn-refresh');
+      if (showSpinner && refreshBtn) refreshBtn.innerHTML = '<span>⏳ Refreshing…</span>';
+
+      try {
+        const url = `/api/activity/doctor-summary?patientEmail=${encodeURIComponent(currentPatientEmail)}&assessmentId=${encodeURIComponent(currentAssessmentId)}&date=${encodeURIComponent(selectedDate)}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`API error (${res.status})`);
+        const data = await res.json();
+
+        renderDoctorActivityView(data);
+        document.getElementById('last-sync-time').textContent = new Date().toLocaleTimeString();
+      } catch (err) {
+        console.warn('Activity fetch error:', err);
+      } finally {
+        if (refreshBtn) refreshBtn.innerHTML = '<span>⟳ Refresh Activity</span>';
+      }
+    }
+
+    function renderDoctorActivityView(data) {
+      const pat = data.patient || {};
+      const asm = data.assessment || {};
+      const daily = data.daily || {};
+      const weekly = data.weekly || {};
+
+      document.getElementById('header-patient-name').textContent = pat.name || currentPatientEmail.split('@')[0];
+      document.getElementById('header-patient-email').textContent = currentPatientEmail;
+      document.getElementById('header-assessment-id').textContent = asm.id || currentAssessmentId || 'N/A';
+      document.getElementById('header-plan-version').textContent = `v${daily.care_plan_version || 1}`;
+
+      const statusBadge = document.getElementById('header-plan-status');
+      if (daily.care_plan_status === 'approved') {
+        statusBadge.textContent = '✓ Approved Plan';
+        statusBadge.className = 'status-badge-approved';
+      } else {
+        statusBadge.textContent = 'Clinical Draft';
+        statusBadge.className = 'status-badge-approved';
+        statusBadge.style.background = '#fefce8';
+        statusBadge.style.color = '#854d0e';
+        statusBadge.style.borderColor = '#fef08a';
+      }
+
+      // KPIs
+      document.getElementById('kpi-today-pct').textContent = `${daily.completion_percentage || 0}%`;
+      document.getElementById('kpi-today-count').textContent = `${daily.completed_tasks || 0} of ${daily.total_tasks || 0} tasks completed`;
+
+      document.getElementById('kpi-weekly-pct').textContent = `${weekly.weekly_completion_percentage || 0}%`;
+      document.getElementById('kpi-weekly-count').textContent = `${weekly.completed_week_tasks || 0} of ${weekly.total_week_tasks || 0} weekly tasks`;
+
+      const ex = daily.exercise_adherence || {};
+      document.getElementById('kpi-exercise-pct').textContent = ex.percentage !== null ? `${ex.percentage}%` : 'N/A';
+      document.getElementById('kpi-exercise-count').textContent = `${ex.completed || 0} of ${ex.total || 0} sessions`;
+
+      const med = daily.medication_adherence || {};
+      if (med.total > 0) {
+        document.getElementById('kpi-meds-pct').textContent = `${med.percentage || 0}%`;
+        document.getElementById('kpi-meds-count').textContent = `${med.completed || 0} of ${med.total || 0} doses taken`;
+      } else {
+        document.getElementById('kpi-meds-pct').textContent = '—';
+        document.getElementById('kpi-meds-count').textContent = 'No prescription tasks scheduled';
+      }
+
+      // Group tasks by period
+      const tasks = daily.tasks || [];
+      if (tasks.length === 0) {
+        document.getElementById('tasks-list-root').innerHTML = `
+          <div style="padding:32px; text-align:center; color:#64748b;">
+            No tasks scheduled for date ${escapeHtml(selectedDate)}.
+          </div>`;
+      } else {
+        const groups = {};
+        tasks.forEach(t => {
+          const p = t.period || 'General';
+          if (!groups[p]) groups[p] = [];
+          groups[p].push(t);
+        });
+
+        const periods = ['Early Morning', 'Morning', 'Mid-Morning', 'Afternoon', 'Evening', 'Dinner', 'Night', 'Bedtime'];
+        const allKeys = Object.keys(groups).sort((a, b) => {
+          let ia = periods.indexOf(a);
+          let ib = periods.indexOf(b);
+          if (ia === -1) ia = 99;
+          if (ib === -1) ib = 99;
+          return ia - ib;
+        });
+
+        let html = '';
+        allKeys.forEach(period => {
+          const items = groups[period];
+          html += `
+            <div class="period-group">
+              <div class="period-title">${escapeHtml(period)}</div>
+              ${items.map(task => `
+                <div class="task-row ${task.completed ? 'completed' : ''}">
+                  <div class="task-left">
+                    <div class="task-icon-box">${task.icon || '✓'}</div>
+                    <div>
+                      <div class="task-title">${escapeHtml(task.title)}</div>
+                      <div class="task-desc">${escapeHtml(task.description)}</div>
+                      <div class="task-meta">
+                        <span class="meta-time">⏰ ${escapeHtml(task.time || 'Daily')}</span>
+                        <span class="meta-cat">🏷 ${escapeHtml(task.category || 'General')}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    ${task.completed ? `
+                      <span class="badge-done">
+                        ✓ Marked Complete by Patient
+                        ${task.completed_at ? `<br/><span style="font-size:10px; opacity:0.8;">${new Date(task.completed_at).toLocaleTimeString()}</span>` : ''}
+                      </span>
+                    ` : `
+                      <span class="badge-pending">⏳ Not marked complete</span>
+                    `}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        });
+        document.getElementById('tasks-list-root').innerHTML = html;
+      }
+
+      // Weekly Table
+      const weekDays = weekly.days || [];
+      const tb = document.getElementById('weekly-table-body');
+      if (weekDays.length === 0) {
+        tb.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#94a3b8;">No weekly records available.</td></tr>`;
+      } else {
+        tb.innerHTML = weekDays.map(d => `
+          <tr style="${d.is_today ? 'background:#f0fdfa; font-weight:600;' : ''}">
+            <td>${escapeHtml(d.day_name)} ${d.is_today ? '<span style="color:#0d9488; font-size:11px;">(Today)</span>' : ''}</td>
+            <td><code>${escapeHtml(d.date)}</code></td>
+            <td>${d.completed_tasks} / ${d.total_tasks}</td>
+            <td>
+              <div class="prog-bar-container">
+                <div class="prog-bar-fill" style="width:${d.percentage}%;"></div>
+              </div>
+              <span>${d.percentage}%</span>
+            </td>
+            <td>
+              ${d.percentage >= 70 ? '<span style="color:#047857; font-weight:600;">Good Adherence</span>' :
+                d.percentage > 0 ? '<span style="color:#d97706; font-weight:500;">Partial</span>' :
+                '<span style="color:#94a3b8;">No activity logged</span>'}
+            </td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>"']/g, m => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      })[m]);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TwinHealth AI — Patient Assessment Workspace</title>
+  <meta name="description" content="Clinical assessment workspace for multi-disease risk detection and patient care planning." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+  <!-- SheetJS for client-side CSV/Excel parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="/static/style.css?v=2026.11" />
+  <style>
+    /* ── Light Theme Override for /input ─────────────────────────────
+       All other pages (/results, /doctor, /patient, /login, /) use a
+       light #f8fafc canvas. This block re-maps the dark CSS variables
+       and overrides hard-coded dark backgrounds so /input matches.
+    ─────────────────────────────────────────────────────────────────── */
+    :root {
+      --bg:          #f8fafc;
+      --bg-2:        #f1f5f9;
+      --bg-3:        #e2e8f0;
+      --glass:       rgba(255,255,255,0.85);
+      --glass-hover: rgba(255,255,255,0.95);
+      --border:      rgba(0,0,0,0.10);
+      --border-hi:   rgba(0,0,0,0.25);
+      --text:        #0f172a;
+      --text-2:      #475569;
+      --text-3:      #94a3b8;
+      --text-accent: #0f172a;
+      --shadow:      0 4px 24px rgba(0,0,0,0.09);
+      --glow:        0 0 30px rgba(13,148,136,0.06);
+      --grad-accent: linear-gradient(135deg,#0f172a,#334155);
+    }
+
+    /* Body & app shell */
+    html, body {
+      background: #f8fafc !important;
+      color: #0f172a !important;
+    }
+    /* Remove dark ambient blobs */
+    body::before, body::after { display: none !important; }
+
+    /* Header: switch from near-black to white */
+    #app-header {
+      background: rgba(255,255,255,0.96) !important;
+      border-bottom: 1px solid #e2e8f0 !important;
+    }
+    /* Brand name: was white (invisible on light), now dark */
+    .brand-name { color: #0f172a !important; }
+    .brand-phase { color: #64748b !important; }
+    .header-right {
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+    }
+    #provider-badge, .header-badge {
+      display: none !important;
+    }
+    .btn-toggle-history {
+      background: #ffffff !important;
+      border: 1px solid #cbd5e1 !important;
+      color: #334155 !important;
+      padding: 7px 14px !important;
+      border-radius: 8px !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
+      cursor: pointer !important;
+      transition: all 0.15s ease !important;
+    }
+    .btn-toggle-history:hover {
+      background: #f1f5f9 !important;
+      color: #0f172a !important;
+      border-color: #94a3b8 !important;
+    }
+
+    /* Hero title: override gradient to a dark ink color */
+    .hero-title {
+      background: linear-gradient(135deg,#0f172a,#334155) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      background-clip: text !important;
+    }
+    .hero-sub { color: #64748b !important; }
+
+    /* Mode tabs */
+    .mode-tabs { gap: 12px; }
+    .mode-tab {
+      background: #ffffff !important;
+      border: 2px solid #e2e8f0 !important;
+      color: #64748b !important;
+      border-radius: 12px !important;
+    }
+    .mode-tab.active {
+      background: #0d9488 !important;
+      border-color: #0d9488 !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 14px rgba(13,148,136,0.25) !important;
+    }
+    .mode-tab:hover:not(.active) {
+      background: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+    }
+    .tab-desc { color: inherit !important; opacity: 0.85; }
+
+    /* Input method bar */
+    .method-toggle {
+      background: #f1f5f9 !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 10px !important;
+    }
+    .method-btn { color: #64748b !important; border-radius: 8px !important; }
+    .method-btn.active {
+      background: #0d9488 !important;
+      color: #ffffff !important;
+      box-shadow: 0 2px 8px rgba(13,148,136,0.2) !important;
+    }
+    .method-btn:hover:not(.active) {
+      background: #e2e8f0 !important;
+      color: #334155 !important;
+    }
+    .btn-download-template {
+      background: rgba(13,148,136,0.06) !important;
+      border: 1px solid rgba(13,148,136,0.25) !important;
+      color: #0d9488 !important;
+    }
+    .btn-download-template:hover {
+      background: rgba(13,148,136,0.12) !important;
+    }
+
+    /* Upload zone */
+    .upload-zone {
+      border-color: rgba(13,148,136,0.3) !important;
+      background: rgba(13,148,136,0.03) !important;
+    }
+    .upload-zone.drag-over {
+      border-color: #0d9488 !important;
+      background: rgba(13,148,136,0.07) !important;
+    }
+    .upload-title { color: #0f172a !important; }
+    .upload-sub   { color: #64748b !important; }
+    .upload-browse { color: #0d9488 !important; }
+    .upload-formats { color: #94a3b8 !important; }
+
+    /* Form sections / accordion */
+    .form-section {
+      background: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
+    }
+    .form-section:hover { border-color: #cbd5e1 !important; }
+    .section-header:hover { background: #f8fafc !important; }
+    .section-title { color: #0f172a !important; }
+    .section-subtitle { color: #64748b !important; }
+    .section-chevron { color: #94a3b8 !important; }
+
+    /* Fields */
+    .field-label { color: #475569 !important; }
+    .field-required { color: #dc2626 !important; }
+
+    /* Inputs */
+    .field-input {
+      background: #f8fafc !important;
+      border: 1px solid #e2e8f0 !important;
+      color: #0f172a !important;
+    }
+    .field-input:focus {
+      background: #ffffff !important;
+      border-color: #000000 !important;
+      box-shadow: 0 0 0 3px rgba(0,0,0,0.1) !important;
+    }
+    .field-input::placeholder { color: #94a3b8 !important; }
+    .field-unit { color: #94a3b8 !important; }
+    select.field-input {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2394a3b8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") !important;
+      background-repeat: no-repeat !important;
+      background-position: right 12px center !important;
+    }
+    select.field-input option { background: #ffffff !important; color: #0f172a !important; }
+
+    /* Toggle group (boolean history fields) */
+    .toggle-item {
+      background: #f8fafc !important;
+      border: 1px solid #e2e8f0 !important;
+    }
+    .toggle-item:has(.t-input:checked) {
+      background: #f0fdf4 !important;
+      border-color: rgba(16,185,129,0.4) !important;
+    }
+    .toggle-item:hover { background: #f1f5f9 !important; }
+    .toggle-lbl { color: #475569 !important; }
+    .toggle-item:has(.t-input:checked) .toggle-lbl { color: #0f172a !important; }
+    .t-switch { background: #cbd5e1 !important; }
+    .t-switch::after { box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important; }
+    .t-input:checked ~ .t-switch { background: #10b981 !important; }
+
+    /* Radio options */
+    .radio-label {
+      background: #f8fafc !important;
+      border: 1.5px solid #e2e8f0 !important;
+      color: #475569 !important;
+    }
+    .radio-option:checked + .radio-label {
+      background: #0d9488 !important;
+      border-color: #0d9488 !important;
+      color: #ffffff !important;
+      box-shadow: 0 2px 8px rgba(13,148,136,0.2) !important;
+    }
+    .radio-label:hover { border-color: #94a3b8 !important; }
+
+    /* Submit / analyze bar */
+    .submit-bar {
+      background: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      border-top: 2px solid #e2e8f0 !important;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.06) !important;
+      backdrop-filter: blur(16px) !important;
+      padding: 16px 24px !important;
+      border-radius: 14px !important;
+      margin-top: 24px !important;
+      position: sticky !important;
+      bottom: 12px !important;
+      z-index: 50 !important;
+    }
+    .submit-info { color: #64748b !important; font-size: 13px !important; font-weight: 500 !important; }
+    .engine-toggle {
+      background: #f8fafc !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 8px !important;
+      padding: 6px 12px !important;
+    }
+    .engine-toggle:hover { background: #f1f5f9 !important; border-color: #cbd5e1 !important; }
+    .engine-label { color: #64748b !important; font-weight: 600 !important; }
+    .engine-select {
+      background: transparent !important;
+      border: none !important;
+      color: #0f172a !important;
+      font-weight: 600 !important;
+    }
+    .engine-select option { background: #ffffff !important; color: #0f172a !important; }
+
+    .btn.btn-analyze, .btn-analyze {
+      background: linear-gradient(135deg,#0d9488,#0f766e) !important;
+      border: none !important;
+      color: #ffffff !important;
+      font-weight: 700 !important;
+      font-size: 14px !important;
+      padding: 12px 26px !important;
+      border-radius: 8px !important;
+      box-shadow: 0 4px 14px rgba(13,148,136,0.35) !important;
+      cursor: pointer !important;
+      transition: all 0.15s ease !important;
+    }
+    .btn.btn-analyze:hover, .btn-analyze:hover {
+      background: linear-gradient(135deg,#0f766e,#115e59) !important;
+      box-shadow: 0 6px 20px rgba(13,148,136,0.45) !important;
+      transform: translateY(-1px) !important;
+    }
+
+    /* Loading screen */
+    .loading-title { color: #0f172a !important; }
+    .loading-sub   { color: #64748b !important; }
+    .loading-card  {
+      background: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      color: #0f172a !important;
+    }
+
+    /* History Sidebar */
+    .history-sidebar {
+      background: #ffffff !important;
+      border-right: 1px solid #e2e8f0 !important;
+      box-shadow: 4px 0 24px rgba(0,0,0,0.08) !important;
+    }
+    .history-header { border-bottom-color: #e2e8f0 !important; }
+    .history-title { color: #0f172a !important; }
+    .btn-clear-history {
+      background: rgba(220,38,38,0.06) !important;
+      border-color: rgba(220,38,38,0.2) !important;
+      color: #dc2626 !important;
+    }
+    .history-item {
+      background: #f8fafc !important;
+      border-color: #e2e8f0 !important;
+    }
+    .history-item:hover { border-color: #cbd5e1 !important; background: #f1f5f9 !important; }
+    .history-empty { color: #94a3b8 !important; }
+
+    /* Sufficiency progress in form.js rendered elements */
+    .section-progress-bar { background: #e2e8f0 !important; }
+    .section-progress-fill { background: #10b981 !important; }
+
+    /* Missing chip (insufficient data) */
+    .missing-chip {
+      background: rgba(220,38,38,0.06) !important;
+      border-color: rgba(220,38,38,0.2) !important;
+      color: #dc2626 !important;
+    }
+
+    /* ── Loading screen spinners ── */
+    .loading-spinner-ring { border-top-color: #0d9488 !important; }
+    .ring-2 { border-right-color: #10b981 !important; }
+    .lc-bar-inner { background: linear-gradient(135deg,#0d9488,#10b981) !important; }
+
+    /* ── Patient sidebar on results (dark .95 bg fix if shown) ── */
+    .patient-sidebar {
+      background: #f8fafc !important;
+      border-color: #e2e8f0 !important;
+    }
+
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: modalFadeIn 0.2s ease-out;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .modal-card {
+      background: #ffffff;
+      border-radius: 18px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+      max-width: 500px;
+      width: 100%;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+      animation: modalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes modalSlideUp {
+      from { transform: translateY(20px) scale(0.98); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+    }
+    .modal-icon-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .modal-icon {
+      width: 42px;
+      height: 42px;
+      background: #18181b;
+      color: #ffffff;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      border: 1px solid #27272a;
+    }
+    .modal-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .modal-subtitle {
+      margin: 2px 0 0;
+      font-size: 12px;
+      color: #64748b;
+    }
+    .modal-close-btn {
+      background: transparent;
+      border: none;
+      font-size: 20px;
+      color: #94a3b8;
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+    .modal-close-btn:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+    .modal-body {
+      padding: 24px;
+    }
+    .modal-input-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 8px;
+    }
+    .modal-input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 13px 16px;
+      font-size: 15px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
+      color: #0f172a;
+      transition: all 0.15s ease;
+      background: #f8fafc;
+      font-family: inherit;
+    }
+    .modal-input:focus {
+      outline: none;
+      border-color: #000000;
+      background: #ffffff;
+      box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.12);
+    }
+    .modal-error-text {
+      color: #000000;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+    .modal-info-box {
+      margin-top: 20px;
+      background: #f4f4f5;
+      border: 1px solid #e4e4e7;
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .info-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 12px;
+      color: #3f3f46;
+      line-height: 1.45;
+    }
+    .info-check {
+      color: #000000;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 1;
+    }
+    .modal-footer {
+      padding: 16px 24px;
+      background: #f8fafc;
+      border-top: 1px solid #f1f5f9;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+    .btn-modal-cancel {
+      background: white;
+      border: 1px solid #cbd5e1;
+      color: #475569;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-modal-cancel:hover {
+      background: #f1f5f9;
+      color: #1e293b;
+    }
+    .btn-modal-confirm {
+      background: linear-gradient(135deg, #0d9488, #0f766e);
+      border: 1px solid #0f766e;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(13, 148, 136, 0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .btn-modal-confirm:hover {
+      background: linear-gradient(135deg, #0f766e, #115e59);
+      border-color: #115e59;
+      box-shadow: 0 4px 14px rgba(13, 148, 136, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+
+    <!-- ── Header ─────────────────────────────────────────────────────── -->
+    <header id="app-header">
+      <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+        <div class="top-left-nav" style="display:inline-flex; align-items:center; gap:8px;">
+          <a href="/" class="nav-control-btn btn-home" style="display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:8px; border:1px solid #cbd5e1; background:#ffffff; color:#334155; font-size:13px; font-weight:600; text-decoration:none; cursor:pointer;" title="Return to Home">
+            <span>🏠</span><span>Home</span>
+          </a>
+          <button type="button" class="nav-control-btn btn-logout" onclick="twinHealthLogout()" style="display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:8px; border:1px solid #fecaca; background:#fff5f5; color:#dc2626; font-size:13px; font-weight:600; cursor:pointer;" title="Log out of session">
+            <span>🚪</span><span>Logout</span>
+          </button>
+        </div>
+        <div class="header-brand">
+          <a href="/" style="display:flex; align-items:center; gap:10px; text-decoration:none;">
+            <div class="brand-mark">
+              <span class="brand-cross">✚</span>
+            </div>
+            <div class="brand-text">
+              <span class="brand-name">TwinHealth <span class="brand-ai">AI</span></span>
+              <span class="brand-phase">Patient Intake Workspace</span>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <nav class="header-nav-links" style="display:flex; gap:16px; align-items:center;">
+        <a href="/input" class="header-nav-link active" style="color:#000000; font-weight:700; text-decoration:none; font-size:13px; border-bottom: 2px solid #000000; padding-bottom: 2px;">1. Patient Intake</a>
+        <a href="/doctor" class="header-nav-link" style="color:#64748b; font-weight:500; text-decoration:none; font-size:13px;">2. Doctor Queue</a>
+        <a href="/patient" class="header-nav-link" style="color:#64748b; font-weight:500; text-decoration:none; font-size:13px;">3. Patient Portal</a>
+      </nav>
+
+      <div class="header-right" id="header-right">
+        <button class="btn-toggle-history" id="btn-toggle-history" title="Toggle History">
+          🕒 History
+        </button>
+      </div>
+    </header>
+
+    <!-- ── Main Workspace Layout ──────────────────────────────────────── -->
+    <div class="main-layout">
+      <!-- ── Left Sidebar: History ── -->
+      <aside class="history-sidebar" id="history-sidebar">
+        <div class="history-header">
+          <span class="history-title">Assessment History</span>
+          <button class="btn-clear-history" id="btn-clear-history" title="Clear all history">🗑 Clear</button>
+        </div>
+        <div class="history-list" id="history-list">
+          <div class="history-empty">No previous assessments</div>
+        </div>
+      </aside>
+
+      <!-- ── Right Content Area ── -->
+      <div class="content-area">
+        <!-- ── Screen: Input ──────────────────────────────────────────────── -->
+        <div id="screen-input" class="screen active">
+
+          <div class="input-hero">
+            <h1 class="hero-title">Patient Clinical Assessment Workspace</h1>
+            <p class="hero-sub">Enter patient demographics, vitals, and lab biomarkers. All 5 disease models run locally with strict sufficiency validation.</p>
+          </div>
+
+          <!-- Mode tabs -->
+          <div class="mode-tabs" id="mode-tabs">
+            <button class="mode-tab active" id="tab-basic" data-mode="basic">
+              <span class="tab-icon">👤</span>
+              <span class="tab-label">Basic Check</span>
+              <span class="tab-desc">Level 1 — Demographics, vitals &amp; lifestyle</span>
+            </button>
+            <button class="mode-tab" id="tab-advanced" data-mode="advanced">
+              <span class="tab-icon">🔬</span>
+              <span class="tab-label">Advanced Check</span>
+              <span class="tab-desc">All levels — Full metabolic &amp; clinical labs</span>
+            </button>
+          </div>
+
+          <!-- Input method toggle -->
+          <div class="input-method-bar">
+            <div class="method-toggle">
+              <button class="method-btn active" id="btn-method-form" data-method="form">
+                📋 Fill Form
+              </button>
+              <button class="method-btn" id="btn-method-upload" data-method="upload">
+                📁 Upload CSV / Excel
+              </button>
+            </div>
+            <div style="display:flex; gap: 8px;">
+              <a href="/static/clinical-form.html" target="_blank" class="btn-download-template" id="btn-download-form" style="text-decoration:none; display:flex; align-items:center;">
+                📄 Clinical Referral Template
+              </a>
+              <button class="btn-download-template" id="btn-download-template">
+                ↓ Download Data Template
+              </button>
+            </div>
+          </div>
+
+          <!-- Upload zone (hidden until upload mode selected) -->
+          <div id="upload-zone" class="upload-zone hidden">
+            <div class="upload-inner" id="upload-inner">
+              <div class="upload-icon">📂</div>
+              <div class="upload-title">Drop your patient CSV or Excel file here</div>
+              <div class="upload-sub">or <label class="upload-browse" for="file-input">browse files</label></div>
+              <div class="upload-formats">Supports: .csv .xlsx .xls</div>
+              <input type="file" id="file-input" accept=".csv,.xlsx,.xls" hidden />
+            </div>
+            <div id="upload-success" class="upload-success hidden">
+              <span class="upload-check">✓</span>
+              <span id="upload-filename"></span>
+              <button class="btn-upload-clear" id="btn-upload-clear">✕ Clear</button>
+            </div>
+          </div>
+
+          <!-- Form container rendered by form.js -->
+          <div id="form-container"></div>
+
+          <!-- Submit bar -->
+          <div class="submit-bar" style="display:flex; justify-content:space-between; align-items:center; margin-top:24px;">
+            <div style="display:flex; align-items:center; gap: 16px;">
+              <div class="submit-info" id="submit-info">
+                <span id="fields-filled-count">0</span> fields filled
+              </div>
+              <div class="engine-toggle">
+                <label for="engine-select" class="engine-label">Engine:</label>
+                <select id="engine-select" class="engine-select">
+                  <option value="local" selected>Local ML (Validated Pipelines)</option>
+                  <option value="gemini">Gemini AI (Optional)</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-analyze" id="btn-analyze">
+              ▶&nbsp; Run 5-Disease Detection
+            </button>
+          </div>
+
+        </div><!-- /#screen-input -->
+
+        <!-- ── Screen: Loading ────────────────────────────────────────────── -->
+        <div id="screen-loading" class="screen">
+          <div class="loading-content">
+            <div class="loading-spinner-ring"></div>
+            <div class="loading-spinner-ring ring-2"></div>
+            <h2 class="loading-title">Analyzing Patient Data</h2>
+            <p class="loading-sub" id="loading-sub">Running 5 local disease models…</p>
+          </div>
+          <div class="loading-disease-grid" id="loading-disease-grid"></div>
+        </div>
+
+      </div><!-- /.content-area -->
+    </div><!-- /.main-layout -->
+
+    <!-- ── Modal: Patient Email Prompt on Run Detection ────────────────── -->
+    <div id="patient-modal-overlay" class="modal-overlay" style="display:none;">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-icon-title">
+            <div class="modal-icon">👤</div>
+            <div>
+              <h3 class="modal-title">Target Patient Account</h3>
+              <p class="modal-subtitle">Save assessment &amp; generate patient activity routine</p>
+            </div>
+          </div>
+          <button type="button" class="modal-close-btn" id="btn-close-patient-modal" title="Close">✕</button>
+        </div>
+
+        <div class="modal-body">
+          <label for="modal-patient-email" class="modal-input-label">
+            Patient Email Address <span style="color:#ef4444;">*</span>
+          </label>
+          <input
+            type="email"
+            id="modal-patient-email"
+            class="modal-input"
+            placeholder="e.g. robert.chen@example.com or patient@example.com"
+            autocomplete="email"
+            required
+          />
+          <div id="modal-email-error" class="modal-error-text" style="display:none;"></div>
+
+          <div class="modal-info-box">
+            <div class="info-item">
+              <span class="info-check">✓</span>
+              <span>All 5 disease risk assessments are securely linked to this patient</span>
+            </div>
+            <div class="info-item">
+              <span class="info-check">✓</span>
+              <span>Personalized AI chronotherapy routine &amp; care plan will be generated</span>
+            </div>
+            <div class="info-item">
+              <span class="info-check">✓</span>
+              <span>When the patient logs in with this email, their daily activities &amp; checklist will be displayed</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-cancel" id="btn-cancel-patient-modal">Cancel</button>
+          <button type="button" class="btn-modal-confirm" id="btn-confirm-detection">
+            <span id="btn-confirm-text">Confirm &amp; Run Detection</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /#app -->
+
+  <script src="/static/form.js?v=2026.11"></script>
+  <script src="/static/results.js?v=2026.11"></script>
+  <script src="/static/plan.js?v=2026.11"></script>
+  <script src="/static/app.js?v=2026.11"></script>
+  <script>
+    // ── Patient Modal & Analyze Workflow ──
+    function twinHealthLogout() {
+      try {
+        sessionStorage.removeItem('twinhealth_user');
+      } catch (e) {}
+      window.location.href = '/login';
+    }
+
+    function openPatientModal() {
+      const modal = document.getElementById('patient-modal-overlay');
+      const emailInput = document.getElementById('modal-patient-email');
+      const errBox = document.getElementById('modal-email-error');
+      if (errBox) {
+        errBox.style.display = 'none';
+        errBox.textContent = '';
+      }
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const prefillEmail = urlParams.get('patientEmail') || localStorage.getItem('twinhealth_last_patient_email') || '';
+      if (emailInput) {
+        if (prefillEmail) emailInput.value = prefillEmail.trim().toLowerCase();
+      }
+      if (modal) modal.style.display = 'flex';
+      if (emailInput) {
+        setTimeout(() => { emailInput.focus(); emailInput.select(); }, 60);
+      }
+    }
+
+    function closePatientModal() {
+      const modal = document.getElementById('patient-modal-overlay');
+      if (modal) modal.style.display = 'none';
+      const errBox = document.getElementById('modal-email-error');
+      if (errBox) {
+        errBox.style.display = 'none';
+        errBox.textContent = '';
+      }
+    }
+
+    async function submitAssessmentWithPatientEmail() {
+      const emailInput = document.getElementById('modal-patient-email');
+      const errBox = document.getElementById('modal-email-error');
+      const patientEmail = (emailInput ? emailInput.value : '').trim().toLowerCase();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!patientEmail || !emailRegex.test(patientEmail)) {
+        if (errBox) {
+          errBox.textContent = 'Please enter a valid Patient Email Address (e.g. robert.chen@example.com).';
+          errBox.style.display = 'block';
+        }
+        if (emailInput) emailInput.focus();
+        return;
+      }
+
+      localStorage.setItem('twinhealth_last_patient_email', patientEmail);
+      closePatientModal();
+
+      // Extract clinical data from form
+      const payload = typeof window.buildPayload === 'function' ? window.buildPayload() : {};
+      
+      // If uploaded dataset has values, merge them in
+      if (window.formState && window.formState.data) {
+        Object.assign(payload, window.formState.data);
+      }
+
+      // Check doctor session
+      let doctorEmail = 'doctor@twinhealth.demo';
+      const stored = sessionStorage.getItem('twinhealth_user');
+      if (stored) {
+        try {
+          const u = JSON.parse(stored);
+          if (u.email) doctorEmail = u.email;
+        } catch {}
+      }
+
+      payload.patient_email = patientEmail;
+      payload.doctor_email = doctorEmail;
+
+      // Transition to loading screen
+      const scrInput = document.getElementById('screen-input');
+      const scrLoading = document.getElementById('screen-loading');
+      if (scrInput) scrInput.classList.remove('active');
+      if (scrLoading) scrLoading.classList.add('active');
+
+      const providerSelect = document.getElementById('engine-select');
+      const provider = (providerSelect && providerSelect.value) ? providerSelect.value : 'local';
+
+      try {
+        const res = await fetch(`/api/detection/analyze?provider=${encodeURIComponent(provider)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.detail?.message || `Inference error (${res.status})`);
+        }
+
+        const data = await res.json();
+        const assessmentId = data.assessment_id;
+
+        if (!assessmentId) {
+          throw new Error('Assessment created without an assessment ID.');
+        }
+
+        // Navigate to persistent results viewer
+        window.location.href = `/results?assessmentId=${encodeURIComponent(assessmentId)}`;
+
+      } catch (err) {
+        if (scrLoading) scrLoading.classList.remove('active');
+        if (scrInput) scrInput.classList.add('active');
+        alert(`Assessment Error: ${err.message}`);
+      }
+    }
+
+    // Attach event handlers after all scripts load
+    window.addEventListener('DOMContentLoaded', () => {
+      const origBtn = document.getElementById('btn-analyze');
+      if (origBtn) {
+        // Clone button to ensure single clean click listener
+        const newBtn = origBtn.cloneNode(true);
+        origBtn.parentNode.replaceChild(newBtn, origBtn);
+
+        newBtn.addEventListener('click', () => {
+          // Validate clinical data before opening modal
+          const payload = typeof window.buildPayload === 'function' ? window.buildPayload() : {};
+          const hasAge = payload.age && Number(payload.age) > 0;
+          const hasData = Object.keys(payload).length > 0;
+
+          if (!hasAge && !hasData) {
+            alert('Please enter patient clinical data (such as Age) before running detection.');
+            const ageInput = document.getElementById('f_age');
+            if (ageInput) ageInput.focus();
+            return;
+          }
+
+          openPatientModal();
+        });
+      }
+
+      // Close modal listeners
+      const closeBtn = document.getElementById('btn-close-patient-modal');
+      const cancelBtn = document.getElementById('btn-cancel-patient-modal');
+      const confirmBtn = document.getElementById('btn-confirm-detection');
+      const overlay = document.getElementById('patient-modal-overlay');
+      const emailInput = document.getElementById('modal-patient-email');
+
+      if (closeBtn) closeBtn.addEventListener('click', closePatientModal);
+      if (cancelBtn) cancelBtn.addEventListener('click', closePatientModal);
+      if (confirmBtn) confirmBtn.addEventListener('click', submitAssessmentWithPatientEmail);
+
+      if (overlay) {
+        overlay.addEventListener('click', (e) => {
+          if (e.target === overlay) closePatientModal();
+        });
+      }
+
+      if (emailInput) {
+        emailInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            submitAssessmentWithPatientEmail();
+          } else if (e.key === 'Escape') {
+            closePatientModal();
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

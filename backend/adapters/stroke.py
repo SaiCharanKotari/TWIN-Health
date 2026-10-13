@@ -10,36 +10,53 @@ class StrokeAdapter(DiseaseAdapter):
     disease = "stroke"
 
     def build_input(self, patient: PatientData, provider: Any = None) -> dict[str, Any]:
+        """Extract stroke risk factors without hardcoding demographic assumptions."""
         if provider and provider.name == "local":
-            gender_val = 'Male' if patient.sex and str(patient.sex).lower() == 'male' else 'Female'
-            htn_val = 1 if (patient.hypertension or (patient.systolic_bp and patient.systolic_bp >= 140)) else 0
-            hd_val = 1 if patient.heart_disease_history else 0
-            
+            gender_val = None
+            if patient.sex:
+                gender_val = "Male" if str(patient.sex).lower() == "male" else "Female"
+
+            htn_val = None
+            if patient.hypertension is not None:
+                htn_val = 1 if patient.hypertension else 0
+            elif patient.systolic_bp is not None:
+                htn_val = 1 if patient.systolic_bp >= 140 else 0
+
+            hd_val = None
+            if patient.heart_disease_history is not None:
+                hd_val = 1 if patient.heart_disease_history else 0
+
             glucose_val = patient.fasting_glucose or patient.random_glucose
             if glucose_val is None and patient.hba1c:
                 glucose_val = round(patient.hba1c * 28.7 - 46.7, 1)
-            
-            bmi_val = patient.bmi or (round(patient.weight_kg / ((patient.height_cm/100)**2), 1) if patient.height_cm and patient.weight_kg else None)
-            
-            smoke_val = 'never smoked'
-            if patient.smoking_status == 'current': smoke_val = 'smokes'
-            elif patient.smoking_status == 'former': smoke_val = 'formerly smoked'
-            elif patient.smoking_status == 'never': smoke_val = 'never smoked'
-            elif patient.smoking_status: smoke_val = str(patient.smoking_status)
-            
-            df_dict = {
+
+            bmi_val = patient.bmi or (
+                round(patient.weight_kg / ((patient.height_cm / 100) ** 2), 1)
+                if patient.height_cm and patient.weight_kg else None
+            )
+
+            smoke_val = None
+            if patient.smoking_status == "current":
+                smoke_val = "smokes"
+            elif patient.smoking_status == "former":
+                smoke_val = "formerly smoked"
+            elif patient.smoking_status == "never":
+                smoke_val = "never smoked"
+            elif patient.smoking_status:
+                smoke_val = str(patient.smoking_status)
+
+            return {
                 "gender": gender_val,
                 "age": patient.age,
                 "hypertension": htn_val,
                 "heart_disease": hd_val,
-                "ever_married": "Yes",
-                "work_type": "Private",
-                "residence_type": "Urban",
+                "ever_married": None,
+                "work_type": None,
+                "residence_type": None,
                 "avg_glucose_level": glucose_val,
                 "bmi": bmi_val,
                 "smoking_status": smoke_val,
             }
-            return df_dict
 
         p = patient.model_dump()
         fields = [
@@ -55,8 +72,8 @@ class StrokeAdapter(DiseaseAdapter):
 
     def normalize_output(self, raw: dict, features_used: list[str], patient: PatientData = None) -> dict:
         config = MODEL_REGISTRY[self.disease]
-        result = self._base_result()
-        completeness, avail, total = self._compute_completeness(patient, config)
+        result = self._base_result(patient)
+        completeness, avail, total = self._compute_completeness(patient, config) if patient else (0.0, 0, 0)
         p_dict = patient.model_dump() if patient else {}
 
         label = raw.get("label", "unknown")

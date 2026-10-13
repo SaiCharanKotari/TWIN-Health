@@ -10,38 +10,41 @@ class CKDAdapter(DiseaseAdapter):
     disease = "ckd"
 
     def build_input(self, patient: PatientData, provider: Any = None) -> dict[str, Any]:
-        """Extract CKD-relevant fields. Only include non-None values."""
+        """Extract CKD-relevant fields without fabricating unmeasured lab tests."""
         if provider and provider.name == "local":
-            su_val = 1 if patient.fasting_glucose and patient.fasting_glucose > 120 else 0
+            su_val = None
+            if patient.fasting_glucose is not None:
+                su_val = 1 if patient.fasting_glucose > 140 else 0
+
             bgr_val = patient.random_glucose or patient.fasting_glucose
-            htn_val = 'yes' if patient.hypertension else 'no'
-            dm_val = 'yes' if patient.diabetes_history else 'no'
-            cad_val = 'yes' if patient.heart_disease_history else 'no'
-            
+            htn_val = "yes" if patient.hypertension is True else ("no" if patient.hypertension is False else None)
+            dm_val = "yes" if patient.diabetes_history is True else ("no" if patient.diabetes_history is False else None)
+            cad_val = "yes" if patient.heart_disease_history is True else ("no" if patient.heart_disease_history is False else None)
+
             # Map urine protein / albumin
-            al_val = 0
+            al_val = None
             if patient.urine_protein is not None:
                 if patient.urine_protein > 300: al_val = 3
                 elif patient.urine_protein > 100: al_val = 2
                 elif patient.urine_protein > 30: al_val = 1
+                else: al_val = 0
             elif patient.uacr is not None:
                 if patient.uacr > 300: al_val = 3
                 elif patient.uacr > 30: al_val = 1
+                else: al_val = 0
 
             cr_val = patient.creatinine
-            if cr_val is None and patient.egfr is not None:
-                cr_val = round(max(0.6, 90.0 / max(1.0, patient.egfr)), 2)
-            
-            df_dict = {
+
+            return {
                 "age": patient.age,
                 "bp": patient.systolic_bp,
-                "sg": 1.020,
+                "sg": None,
                 "al": al_val,
                 "su": su_val,
-                "rbc": 'normal',
-                "pc": 'normal',
-                "pcc": 'notpresent',
-                "ba": 'notpresent',
+                "rbc": None,
+                "pc": None,
+                "pcc": None,
+                "ba": None,
                 "bgr": bgr_val,
                 "bu": patient.bun,
                 "sc": cr_val,
@@ -54,11 +57,10 @@ class CKDAdapter(DiseaseAdapter):
                 "htn": htn_val,
                 "dm": dm_val,
                 "cad": cad_val,
-                "appet": 'good',
-                "pe": 'no',
-                "ane": 'no',
+                "appet": None,
+                "pe": None,
+                "ane": None,
             }
-            return df_dict
 
         p = patient.model_dump()
         fields = [
@@ -73,8 +75,8 @@ class CKDAdapter(DiseaseAdapter):
 
     def normalize_output(self, raw: dict, features_used: list[str], patient: PatientData = None) -> dict:
         config = MODEL_REGISTRY[self.disease]
-        result = self._base_result()
-        completeness, avail, total = self._compute_completeness(patient, config)
+        result = self._base_result(patient)
+        completeness, avail, total = self._compute_completeness(patient, config) if patient else (0.0, 0, 0)
         p_dict = patient.model_dump() if patient else {}
 
         label = raw.get("label", "unknown")

@@ -3,207 +3,588 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TwinHealth AI — Disease Detection</title>
-  <meta name="description" content="TwinHealth AI Phase 1: Upload your clinical data and receive AI-powered risk estimates for Diabetes, Heart Disease, CKD, Liver Disease, and Stroke." />
+  <title>TwinHealth AI — Digital Twin Chronic Disease Platform</title>
+  <meta name="description" content="Digital-twin chronic disease risk intelligence, local machine learning models, and synchronized physician care planning." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
-  <!-- SheetJS for client-side CSV/Excel parsing -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <link rel="stylesheet" href="/static/style.css?v=2026.2" />
+  <link rel="stylesheet" href="/static/style.css?v=2026.7" />
+  <style>
+    :root {
+      --primary: #0d9488;
+      --primary-dark: #0f766e;
+      --slate-900: #000000;
+      --slate-800: #18181b;
+      --slate-700: #27272a;
+      --slate-500: #71717a;
+      --slate-200: #e4e4e7;
+      --slate-100: #f4f4f5;
+      --slate-50: #ffffff;
+    }
+    body {
+      margin: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--slate-50);
+      color: var(--slate-900);
+      line-height: 1.6;
+    }
+    /* Top Nav */
+    .landing-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--slate-200);
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--slate-900);
+    }
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #0d9488, #0f766e);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 700;
+      box-shadow: 0 4px 10px rgba(13, 148, 136, 0.25);
+    }
+    .brand-title-wrap {
+      display: flex;
+      flex-direction: column;
+    }
+    .brand-title {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .brand-title span { color: var(--primary); }
+    .brand-sub {
+      font-size: 11px;
+      color: var(--slate-500);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      align-items: center;
+    }
+    .nav-link {
+      color: var(--slate-700);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+    .nav-link:hover { color: var(--primary); }
+    .nav-btn-login {
+      background: var(--primary);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.15s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    .nav-btn-login:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    /* Hero */
+    .hero-section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 72px 24px 60px;
+      text-align: center;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: #f4f4f5;
+      border: 1px solid #e4e4e7;
+      border-radius: 999px;
+      color: var(--primary-dark);
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      letter-spacing: 0.02em;
+    }
+    .hero-title {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      color: var(--slate-900);
+      max-width: 860px;
+      margin: 0 auto 20px;
+    }
+    .hero-title span {
+      background: linear-gradient(135deg, #000000 0%, #3f3f46 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-desc {
+      font-size: 18px;
+      color: var(--slate-500);
+      max-width: 760px;
+      margin: 0 auto 36px;
+      line-height: 1.6;
+    }
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 48px;
+      flex-wrap: wrap;
+    }
+    .btn-hero-primary {
+      background: var(--primary);
+      color: white;
+      padding: 14px 28px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: 600;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-hero-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+    .btn-hero-secondary {
+      background: white;
+      color: var(--slate-700);
+      border: 1px solid var(--slate-200);
+      padding: 14px 28px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .btn-hero-secondary:hover {
+      background: var(--slate-100);
+      border-color: #cbd5e1;
+    }
+
+    /* Trust Pill Bar */
+    .trust-bar {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+      color: var(--slate-500);
+      font-size: 13px;
+      font-weight: 500;
+      border-top: 1px solid var(--slate-200);
+      border-bottom: 1px solid var(--slate-200);
+      padding: 18px 0;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .trust-item { display: flex; align-items: center; gap: 8px; }
+
+    /* Concept Section */
+    .concept-section {
+      max-width: 1200px;
+      margin: 80px auto;
+      padding: 0 24px;
+    }
+    .section-header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+    .section-tag {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+      display: block;
+    }
+    .section-title {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--slate-900);
+      margin: 0 0 12px;
+      letter-spacing: -0.02em;
+    }
+    .section-desc {
+      font-size: 16px;
+      color: var(--slate-500);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* 5 Models Grid */
+    .models-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-top: 36px;
+    }
+    .model-card {
+      background: white;
+      border: 1px solid var(--slate-200);
+      border-radius: 14px;
+      padding: 24px;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .model-card:hover {
+      border-color: var(--primary);
+      box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.08);
+      transform: translateY(-3px);
+    }
+    .model-icon {
+      font-size: 32px;
+      margin-bottom: 16px;
+      display: inline-block;
+    }
+    .model-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--slate-900);
+      margin-bottom: 8px;
+    }
+    .model-meta {
+      font-size: 12px;
+      color: var(--slate-500);
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+    .model-pill {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: #f4f4f5;
+      color: #18181b;
+      border: 1px solid #e4e4e7;
+    }
+
+    /* Workflow Columns */
+    .workflow-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      margin-top: 40px;
+    }
+    .wf-card {
+      background: white;
+      border: 1px solid var(--slate-200);
+      border-radius: 16px;
+      padding: 36px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+    }
+    .wf-card-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--slate-900);
+      margin: 0 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .wf-steps {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 24px;
+    }
+    .wf-step {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      color: var(--slate-700);
+      line-height: 1.5;
+    }
+    .wf-step-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #f4f4f5;
+      color: #000000;
+      border: 1px solid #e4e4e7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* Find Nearby Care */
+    .care-box {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: white;
+      border-radius: 20px;
+      padding: 48px;
+      text-align: center;
+      max-width: 1000px;
+      margin: 80px auto;
+      box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.1);
+    }
+    .care-title {
+      font-size: 28px;
+      font-weight: 800;
+      margin: 0 0 12px;
+    }
+    .care-desc {
+      font-size: 15px;
+      color: #94a3b8;
+      max-width: 600px;
+      margin: 0 auto 28px;
+    }
+    .care-btn {
+      background: var(--primary);
+      color: white;
+      text-decoration: none;
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: background 0.15s ease;
+    }
+    .care-btn:hover { background: var(--primary-dark); }
+
+    /* Academic Disclaimer */
+    .disclaimer-card {
+      background: #fefce8;
+      border: 1px solid #fef08a;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 1000px;
+      margin: 40px auto 80px;
+      font-size: 13px;
+      color: #854d0e;
+      line-height: 1.6;
+    }
+
+    /* Footer */
+    .landing-footer {
+      border-top: 1px solid var(--slate-200);
+      background: white;
+      padding: 32px 24px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--slate-500);
+    }
+
+    @media (max-width: 768px) {
+      .hero-title { font-size: 32px; }
+      .workflow-grid { grid-template-columns: 1fr; }
+      .landing-nav { padding: 12px 16px; }
+      .nav-links { display: none; }
+    }
+  </style>
 </head>
 <body>
-  <div id="app">
 
-    <!-- ── Header ─────────────────────────────────────────────────────── -->
-    <header id="app-header">
-      <div class="header-brand">
-        <div class="brand-mark">
-          <span class="brand-cross">✚</span>
-        </div>
-        <div class="brand-text">
-          <span class="brand-name">TwinHealth <span class="brand-ai">AI</span></span>
-          <span class="brand-phase">Phase 1 · Detection</span>
-        </div>
+  <!-- Navigation -->
+  <header class="landing-nav">
+    <a href="/" class="brand-group">
+      <div class="brand-icon">✚</div>
+      <div class="brand-title-wrap">
+        <div class="brand-title">TwinHealth <span>AI</span></div>
+        <div class="brand-sub">Digital Twin Platform</div>
       </div>
-      <div class="header-right" id="header-right">
-        <button class="btn-toggle-history" id="btn-toggle-history" title="Toggle History">
-          🕒 History
-        </button>
-        <span class="header-badge" id="provider-badge"></span>
-      </div>
-    </header>
+    </a>
+    <nav class="nav-links">
+      <a href="#models" class="nav-link">5 Disease Models</a>
+      <a href="#workflows" class="nav-link">Workflows</a>
+      <a href="#nearby-care" class="nav-link">Find Nearby Care</a>
+      <a href="/login" class="nav-btn-login">Sign In / Login</a>
+    </nav>
+  </header>
 
-    <!-- ── Main Workspace Layout ──────────────────────────────────────── -->
-    <div class="main-layout">
-      <!-- ── Left Sidebar: History ── -->
-      <aside class="history-sidebar" id="history-sidebar">
-        <div class="history-header">
-          <span class="history-title">Assessment History</span>
-          <button class="btn-clear-history" id="btn-clear-history" title="Clear all history">🗑 Clear</button>
-        </div>
-        <div class="history-list" id="history-list">
-          <div class="history-empty">No previous assessments</div>
-        </div>
-      </aside>
-
-      <!-- ── Right Content Area ── -->
-      <div class="content-area">
-        <!-- ── Screen: Input ──────────────────────────────────────────────── -->
-        <div id="screen-input" class="screen active">
-
-      <div class="input-hero">
-        <h1 class="hero-title">Multi-Disease Risk Detection</h1>
-        <p class="hero-sub">Enter available patient data. Models run only when sufficient data is present — no fake values substituted.</p>
-      </div>
-
-      <!-- Mode tabs -->
-      <div class="mode-tabs" id="mode-tabs">
-        <button class="mode-tab active" id="tab-basic" data-mode="basic">
-          <span class="tab-icon">👤</span>
-          <span class="tab-label">Basic Check</span>
-          <span class="tab-desc">Level 1 — Demographic &amp; lifestyle data</span>
-        </button>
-        <button class="mode-tab" id="tab-advanced" data-mode="advanced">
-          <span class="tab-icon">🔬</span>
-          <span class="tab-label">Advanced Check</span>
-          <span class="tab-desc">All levels — Full clinical data</span>
-        </button>
-      </div>
-
-      <!-- Input method toggle -->
-      <div class="input-method-bar">
-        <div class="method-toggle">
-          <button class="method-btn active" id="btn-method-form" data-method="form">
-            📋 Fill Form
-          </button>
-          <button class="method-btn" id="btn-method-upload" data-method="upload">
-            📁 Upload CSV / Excel
-          </button>
-        </div>
-        <div style="display:flex; gap: 8px;">
-          <a href="/static/clinical-form.html" target="_blank" class="btn-download-template" id="btn-download-form" style="text-decoration:none; display:flex; align-items:center;">
-            📄 Download Clinical Form (PDF)
-          </a>
-          <button class="btn-download-template" id="btn-download-template">
-            ↓ Download Template
-          </button>
-        </div>
-      </div>
-
-      <!-- Upload zone (hidden until upload mode selected) -->
-      <div id="upload-zone" class="upload-zone hidden">
-        <div class="upload-inner" id="upload-inner">
-          <div class="upload-icon">📂</div>
-          <div class="upload-title">Drop your CSV or Excel file here</div>
-          <div class="upload-sub">or <label class="upload-browse" for="file-input">browse files</label></div>
-          <div class="upload-formats">Supports: .csv  .xlsx  .xls</div>
-          <input type="file" id="file-input" accept=".csv,.xlsx,.xls" hidden />
-        </div>
-        <div id="upload-success" class="upload-success hidden">
-          <span class="upload-check">✓</span>
-          <span id="upload-filename"></span>
-          <button class="btn-upload-clear" id="btn-upload-clear">✕ Clear</button>
-        </div>
-      </div>
-
-      <!-- Form container -->
-      <div id="form-container"></div>
-
-      <!-- Submit bar -->
-      <div class="submit-bar" style="display:flex; justify-content:space-between; align-items:center;">
-        <div style="display:flex; align-items:center; gap: 16px;">
-          <div class="submit-info" id="submit-info">
-            <span id="fields-filled-count">0</span> fields filled
-          </div>
-          <div class="engine-toggle">
-            <label for="engine-select" class="engine-label">Engine:</label>
-            <select id="engine-select" class="engine-select">
-              <option value="local" selected>Local ML (Fast)</option>
-              <option value="gemini">Gemini AI (Flexible)</option>
-            </select>
-          </div>
-        </div>
-        <button class="btn btn-analyze" id="btn-analyze">
-          ▶&nbsp; Run Detection
-        </button>
-      </div>
-
-    </div><!-- /#screen-input -->
-
-    <!-- ── Screen: Loading ────────────────────────────────────────────── -->
-    <div id="screen-loading" class="screen">
-      <div class="loading-content">
-        <div class="loading-spinner-ring"></div>
-        <div class="loading-spinner-ring ring-2"></div>
-        <h2 class="loading-title">Analysing Patient Data</h2>
-        <p class="loading-sub" id="loading-sub">Running disease models…</p>
-      </div>
-      <div class="loading-disease-grid" id="loading-disease-grid"></div>
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-eyebrow">
+      <span>●</span> 100% Offline Local Machine Learning &amp; JSON Persistence
+    </div>
+    <h1 class="hero-title">
+      Predictive Digital-Twin Intelligence &amp; <span>Personalized Lifestyle Care</span>
+    </h1>
+    <p class="hero-desc">
+      TwinHealth AI creates a dynamic physiological digital twin from patient vitals and biomarkers. Evaluates 5 chronic diseases simultaneously, connects physician review queues, and synchronizes real-time patient daily activity tracking.
+    </p>
+    <div class="hero-actions">
+      <a href="/login" class="btn-hero-primary">
+        <span>Access Portal Login</span>
+        <span>→</span>
+      </a>
+      <a href="/login?role=doctor" class="btn-hero-secondary">
+        🩺 Clinician Assessment Workspace
+      </a>
     </div>
 
-    <!-- ── Screen: Results ────────────────────────────────────────────── -->
-    <div id="screen-results" class="screen">
+    <div class="trust-bar">
+      <div class="trust-item"><span>⚡</span> Local Scikit-Learn Pipelines</div>
+      <div class="trust-item"><span>🔒</span> Zero Cloud API Dependencies Required</div>
+      <div class="trust-item"><span>📁</span> Persistent Local JSON Storage (data/)</div>
+      <div class="trust-item"><span>🔄</span> Real-Time Activity Tracking</div>
+    </div>
+  </section>
 
-      <div class="results-topbar">
-        <div class="results-topbar-left">
-          <h1 class="results-heading">Detection Results</h1>
-          <p class="results-ts" id="results-ts"></p>
-        </div>
-        <div class="results-topbar-right" style="display:flex; gap:8px;">
-          <a href="https://www.google.com/maps/search/clinics+and+diagnostic+centers+near+me" target="_blank" class="btn btn-secondary" id="btn-find-doctor" style="text-decoration:none; display:flex; align-items:center;">
-            📍 Find Doctor / Lab
-          </a>
-          <button class="btn btn-secondary" id="btn-print-referral">🖨 Print Referral Form</button>
-          <button class="btn btn-secondary" id="btn-new">← New Assessment</button>
-        </div>
-      </div>
-
-      <div class="results-layout">
-
-        <!-- Patient summary sidebar -->
-        <aside class="patient-sidebar" id="patient-sidebar">
-          <div class="sidebar-title">Patient Summary</div>
-          <div id="patient-summary-content"></div>
-        </aside>
-
-        <!-- Disease cards -->
-        <main class="results-main">
-          <div class="disease-grid" id="disease-grid"></div>
-
-          <!-- Priority actions -->
-          <div class="priority-box hidden" id="priority-box">
-            <div class="priority-title">⚡ Priority Actions</div>
-            <ol class="priority-list" id="priority-list"></ol>
-          </div>
-
-          <p class="results-disclaimer" id="results-disclaimer"></p>
-        </main>
-
-      </div>
-    </div><!-- /#screen-results -->
-
-    <!-- ── Screen 4: Care Plan & Lifestyle Protocol ───────────────── -->
-    <div id="screen-plan" class="screen">
-      <!-- Rendered dynamically by plan.js -->
-    </div><!-- /#screen-plan -->
-
-      </div><!-- /.content-area -->
-    </div><!-- /.main-layout -->
-
-    <!-- ── Detail panel (slide-in) ───────────────────────────────────── -->
-    <div id="detail-overlay" class="detail-overlay hidden" role="dialog" aria-modal="true">
-      <div class="detail-panel" id="detail-panel">
-        <button class="detail-close" id="detail-close" aria-label="Close">✕</button>
-        <div id="detail-content"></div>
-      </div>
+  <!-- 5 ML Models Section -->
+  <section class="concept-section" id="models">
+    <div class="section-header">
+      <span class="section-tag">Machine Learning Pathways</span>
+      <h2 class="section-title">Five Local Chronic Disease Models</h2>
+      <p class="section-desc">
+        Trained on validated clinical datasets. Strict data sufficiency rules guarantee no fabricated biomarkers are ever substituted.
+      </p>
     </div>
 
-  </div><!-- /#app -->
+    <div class="models-grid">
+      <div class="model-card">
+        <div class="model-icon">🩺</div>
+        <div class="model-name">Type 2 Diabetes</div>
+        <div class="model-meta">Pima Indians metabolic cohort. Requires fasting glucose or HbA1c with BMI to calculate risk score.</div>
+        <span class="model-pill">0.83 ROC-AUC</span>
+      </div>
 
-  <script src="/static/form.js?v=2026.5"></script>
-  <script src="/static/results.js?v=2026.5"></script>
-  <script src="/static/plan.js?v=2026.5"></script>
-  <script src="/static/app.js?v=2026.5"></script>
+      <div class="model-card">
+        <div class="model-icon">❤️</div>
+        <div class="model-name">Heart Disease</div>
+        <div class="model-meta">Cleveland Cardiovascular cohort. Evaluates blood pressure, total cholesterol, resting ECG &amp; chest pain.</div>
+        <span class="model-pill">0.90 ROC-AUC</span>
+      </div>
+
+      <div class="model-card">
+        <div class="model-icon">🫘</div>
+        <div class="model-name">Chronic Kidney Disease</div>
+        <div class="model-meta">UCI CKD cohort. Evaluates glomerular filtration (eGFR), serum creatinine, and urine albumin staging.</div>
+        <span class="model-pill">Clinical Staging (KDIGO)</span>
+      </div>
+
+      <div class="model-card">
+        <div class="model-icon">🟤</div>
+        <div class="model-name">Liver Disease</div>
+        <div class="model-meta">Indian Liver Patient dataset. Assesses hepatic transaminases (ALT/AST), direct bilirubin &amp; albumin.</div>
+        <span class="model-pill">0.76 ROC-AUC</span>
+      </div>
+
+      <div class="model-card">
+        <div class="model-icon">🧠</div>
+        <div class="model-name">Stroke Risk</div>
+        <div class="model-meta">Cardiovascular &amp; neurological cohort. Evaluates systolic BP, age, glucose, and hypertension risk factors.</div>
+        <span class="model-pill">0.84 ROC-AUC</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dual Workflows Section -->
+  <section class="concept-section" id="workflows">
+    <div class="section-header">
+      <span class="section-tag">Synchronized Platform</span>
+      <h2 class="section-title">How Clinicians &amp; Patients Interact</h2>
+      <p class="section-desc">
+        Both experiences are backed by the same local JSON records in <code>data/</code> with zero client-only handoffs.
+      </p>
+    </div>
+
+    <div class="workflow-grid">
+      <div class="wf-card">
+        <h3 class="wf-card-title"><span>🩺</span> Clinician Workflow (/input)</h3>
+        <ul class="wf-steps">
+          <li class="wf-step">
+            <span class="wf-step-num">1</span>
+            <span><strong>Target Patient Identification:</strong> Enter mandatory Patient Email Address at top of assessment workspace.</span>
+          </li>
+          <li class="wf-step">
+            <span class="wf-step-num">2</span>
+            <span><strong>Multi-Disease Inference:</strong> Enter vitals or upload CSV/Excel. Run 5 local ML pipelines in milliseconds.</span>
+          </li>
+          <li class="wf-step">
+            <span class="wf-step-num">3</span>
+            <span><strong>Persistent Results:</strong> View exact results at <code>/results?assessmentId=&lt;id&gt;</code> with full biomarker explanations.</span>
+          </li>
+          <li class="wf-step">
+            <span class="wf-step-num">4</span>
+            <span><strong>Activity Monitoring:</strong> Click <em>Patient Activity Planning</em> to view patient-reported habit completion and medication adherence in real time.</span>
+          </li>
+        </ul>
+        <a href="/login?role=doctor" class="btn-hero-primary" style="padding:10px 18px; font-size:14px;">Open Clinician Workspace →</a>
+      </div>
+
+      <div class="wf-card">
+        <h3 class="wf-card-title"><span>👤</span> Patient Experience (/patient)</h3>
+        <ul class="wf-steps">
+          <li class="wf-step">
+            <span class="wf-step-num">1</span>
+            <span><strong>Email Sign-In:</strong> Patient logs in with the exact email entered during clinical assessment.</span>
+          </li>
+          <li class="wf-step">
+            <span class="wf-step-num">2</span>
+            <span><strong>AI Chronotherapy Routine:</strong> View personalized 24-hour schedule (Morning, Afternoon, Evening, Bedtime).</span>
+          </li>
+          <li class="wf-step">
+            <span class="wf-step-num">3</span>
+            <span><strong>Interactive Checklists:</strong> Check off daily walking, exercise goals, hydration, and doctor-verified medications.</span>
+          </li>
+          <li class="wf-step">
+            <span class="wf-step-num">4</span>
+            <span><strong>Adherence Telemetry:</strong> Track 7-day adherence percentages persisted directly into backend JSON storage.</span>
+          </li>
+        </ul>
+        <a href="/login?role=patient" class="btn-hero-secondary" style="padding:10px 18px; font-size:14px;">Open Patient Dashboard →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Find Nearby Care Section -->
+  <section class="care-box" id="nearby-care">
+    <h2 class="care-title">Find Nearby Diagnostic Labs &amp; Clinics</h2>
+    <p class="care-desc">
+      Missing key clinical markers like HbA1c, eGFR, or lipid panels? Locate accredited clinical laboratories and diagnostic centers near your location for comprehensive testing.
+    </p>
+    <a href="https://www.google.com/maps/search/clinics+and+diagnostic+centers+near+me" target="_blank" rel="noopener noreferrer" class="care-btn">
+      <span>📍 Search Diagnostic Centers on Google Maps</span>
+      <span>↗</span>
+    </a>
+  </section>
+
+  <!-- Academic Disclaimer -->
+  <div class="disclaimer-card">
+    <strong>⚠️ Clinical &amp; Academic Disclaimer:</strong> TwinHealth AI is developed for research, educational demonstration, and clinical decision support prototyping. It is <strong>NOT</strong> an FDA-cleared Software as a Medical Device (SaMD) and does <strong>NOT</strong> provide binding medical diagnoses or replace licensed clinical judgment. Prediction outputs are statistical risk probabilities based on cohort datasets. All clinical decisions must be verified by a qualified healthcare professional.
+  </div>
+
+  <!-- Footer -->
+  <footer class="landing-footer">
+    <p>© 2026 TwinHealth AI — Digital Twin Chronic Disease Platform. Local JSON Persistence Architecture.</p>
+  </footer>
+
 </body>
 </html>

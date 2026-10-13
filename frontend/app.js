@@ -181,19 +181,22 @@ async function initHealthBadge() {
     if (prov === 'gemini' && key) {
       badge.textContent = '✓ Gemini AI';
       badge.style.borderColor = 'rgba(16,185,129,.35)';
-      badge.style.color = 'var(--green)';
+      badge.style.color = '#10b981';
       badge.style.background = 'rgba(16,185,129,.08)';
     } else if (prov === 'mock') {
       badge.textContent = '⚙ Demo Mode (mock)';
       badge.style.borderColor = 'rgba(245,158,11,.35)';
-      badge.style.color = 'var(--amber)';
+      badge.style.color = '#d97706';
       badge.style.background = 'rgba(245,158,11,.08)';
     } else {
       badge.textContent = `✦ ${prov}`;
+      badge.style.color = '#0d9488';
+      badge.style.background = 'rgba(13,148,136,.08)';
+      badge.style.borderColor = 'rgba(13,148,136,.3)';
     }
+    badge.style.display = 'inline-flex';
   } catch {
-    badge.textContent = 'API Offline';
-    badge.style.color = 'var(--red)';
+    /* silently hide badge if API health check fails */
   }
 }
 

@@ -36,33 +36,40 @@ async def generate_care_plan(
     patient_data: Dict[str, Any],
     disease_results: Dict[str, Any],
     doctor_comments: Optional[str] = "",
-    uploaded_prescriptions: Optional[List[Dict[str, Any]]] = None
+    uploaded_prescriptions: Optional[List[Dict[str, Any]]] = None,
+    provider: Optional[str] = "local"
 ) -> Dict[str, Any]:
     """
     Main entry point for generating the personalized daily care plan.
-    Attempts Gemini Clinical AI first; falls back to Deterministic Clinical Decision Support (CDS) if needed.
+    Local Deterministic Clinical Decision Support (CDS) runs instantaneously by default.
+    Gemini AI is only invoked if explicitly requested via provider='gemini'.
     """
-    # 1. Identify active disease risks & primary drivers
     risk_summary = _extract_risk_summary(disease_results)
     
-    # 2. Attempt AI Generation
+    # 1. Attempt AI Generation only if requested
     ai_result = None
-    if GEMINI_API_KEY and GEMINI_API_KEY != "your_gemini_api_key_here":
+    if provider == "gemini" and GEMINI_API_KEY and GEMINI_API_KEY != "your_gemini_api_key_here":
         try:
             ai_result = await asyncio.wait_for(
                 _generate_gemini_care_plan(patient_data, risk_summary, doctor_comments, uploaded_prescriptions),
-                timeout=18.0
+                timeout=12.0
             )
         except Exception as exc:
             logger.warning(f"Gemini Care Plan generation failed/timed out: {exc}. Using Local Clinical CDS Engine.")
 
     if ai_result and isinstance(ai_result, dict) and "diet" in ai_result:
         ai_result["provider"] = "gemini-clinical-ai"
+        ai_result["status"] = "draft"
         return ai_result
 
-    # 3. Deterministic Local Clinical CDS Engine Fallback
+    # 2. Instantaneous Deterministic Local Clinical CDS Engine
     local_plan = _generate_local_cds_care_plan(patient_data, risk_summary, doctor_comments, uploaded_prescriptions)
     local_plan["provider"] = "local-clinical-decision-support"
+    local_plan["status"] = "draft"
+    local_plan["disclaimer"] = (
+        "This lifestyle and chronotherapy protocol is generated as a clinical draft. "
+        "It requires review and approval by an attending physician before being published to the patient."
+    )
     return local_plan
 
 
@@ -79,17 +86,22 @@ def _extract_risk_summary(disease_results: Dict[str, Any]) -> Dict[str, Any]:
     for dis, data in disease_results.items():
         if not isinstance(data, dict):
             continue
-        pred = data.get("prediction", {})
-        label = (pred.get("label") or "unknown").lower()
+        pred = data.get("prediction") or {}
+        if not isinstance(pred, dict):
+            pred = {}
+        label = (pred.get("label") or data.get("status") or "unknown").lower()
         pct = pred.get("percentage") or (int(pred.get("probability", 0) * 100))
         name = data.get("display_name") or dis.replace("_", " ").title()
+        
+        explanation = data.get("explanation") or {}
+        factors = explanation.get("factors", []) if isinstance(explanation, dict) else []
         
         info = {
             "disease": dis,
             "name": name,
             "percentage": pct,
             "label": label,
-            "factors": data.get("explanation", {}).get("factors", [])
+            "factors": factors
         }
         summary["diseases"][dis] = info
         

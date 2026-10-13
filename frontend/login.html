@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TwinHealth AI — Portal Login</title>
+  <meta name="description" content="Select your role and enter your email address to access the TwinHealth AI Clinical Portal." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css?v=2026.6" />
+  <style>
+    body {
+      background-color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #0f172a;
+      margin: 0;
+    }
+    .login-container {
+      max-width: 520px;
+      margin: 48px auto;
+      padding: 0 20px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .login-brand {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .login-brand .brand-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+    .brand-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #0d9488, #0f766e);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(13, 148, 136, 0.25);
+    }
+    .brand-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+    }
+    .brand-sub {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+    .login-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+    }
+    .role-section-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      margin-bottom: 12px;
+    }
+    .role-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .role-option {
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: #f8fafc;
+      user-select: none;
+    }
+    .role-option:hover {
+      border-color: #cbd5e1;
+      background: #f1f5f9;
+    }
+    .role-option.active {
+      border-color: #000000;
+      background: #000000;
+      color: #ffffff;
+      box-shadow: 0 0 0 1px #000000;
+    }
+    .role-option.active .role-name {
+      color: #ffffff;
+    }
+    .role-option.active .role-desc {
+      color: #a1a1aa;
+    }
+    .role-icon {
+      font-size: 28px;
+      margin-bottom: 6px;
+      display: block;
+    }
+    .role-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #0f172a;
+      display: block;
+    }
+    .role-desc {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 2px;
+      display: block;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 8px;
+    }
+    .form-input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px 16px;
+      font-size: 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      background: #ffffff;
+      color: #0f172a;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: #000000;
+      box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+    }
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #ffffff;
+      background: #000000;
+      border: 1px solid #000000;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.05s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-submit:hover {
+      background: #27272a;
+    }
+    .btn-submit:active {
+      transform: scale(0.99);
+    }
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .demo-accounts {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 12px;
+      color: #64748b;
+    }
+    .demo-accounts-title {
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 8px;
+    }
+    .demo-chip {
+      display: inline-block;
+      padding: 4px 10px;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 11px;
+      color: #334155;
+      cursor: pointer;
+      margin: 2px 4px 4px 0;
+      transition: background 0.15s ease;
+    }
+    .demo-chip:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+    .disclaimer-box {
+      margin-top: 24px;
+      padding: 12px 16px;
+      background: #f4f4f5;
+      border: 1px solid #d4d4d8;
+      border-radius: 10px;
+      font-size: 12px;
+      color: #18181b;
+      line-height: 1.5;
+    }
+    .error-alert {
+      padding: 12px 16px;
+      background: #f4f4f5;
+      border: 1.5px solid #000000;
+      border-radius: 10px;
+      color: #000000;
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .back-home {
+      text-align: center;
+      margin-top: 24px;
+    }
+    .back-home a {
+      color: #64748b;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .back-home a:hover {
+      color: #0f172a;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
+    <div class="login-brand">
+      <a href="/" class="brand-logo">
+        <div class="brand-badge">✚</div>
+        <div style="text-align:left;">
+          <div class="brand-title">TwinHealth <span style="color:#0d9488;">AI</span></div>
+          <div class="brand-sub">Digital Twin Clinical Platform</div>
+        </div>
+      </a>
+    </div>
+
+    <div class="login-card">
+      <div id="login-error" class="error-alert"></div>
+
+      <div class="role-section-title">Select Your Role</div>
+      <div class="role-selector">
+        <div class="role-option active" id="role-patient" onclick="selectRole('patient')">
+          <span class="role-icon">👤</span>
+          <span class="role-name">Patient</span>
+          <span class="role-desc">View routines &amp; track daily habits</span>
+        </div>
+        <div class="role-option" id="role-doctor" onclick="selectRole('doctor')">
+          <span class="role-icon">🩺</span>
+          <span class="role-name">Clinician / Doctor</span>
+          <span class="role-desc">Run assessments &amp; monitor adherence</span>
+        </div>
+      </div>
+
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label" for="login-email" id="email-label">Patient Email Address</label>
+          <input 
+            type="email" 
+            id="login-email" 
+            class="form-input" 
+            placeholder="e.g. robert.chen@example.com" 
+            required 
+            autocomplete="email"
+          />
+        </div>
+
+        <button type="submit" id="btn-login-submit" class="btn-submit">
+          <span>Continue to Portal</span>
+          <span>→</span>
+        </button>
+      </form>
+
+      <div class="demo-accounts">
+        <div class="demo-accounts-title">Quick Demo Logins (Click to autofill):</div>
+        <div>
+          <span style="display:block; margin-bottom:4px; font-weight:500;">Patients:</span>
+          <span class="demo-chip" onclick="fillDemo('robert.chen@example.com', 'patient')">robert.chen@example.com (Approved Plan)</span>
+          <span class="demo-chip" onclick="fillDemo('john.doe@example.com', 'patient')">john.doe@example.com</span>
+        </div>
+        <div style="margin-top:6px;">
+          <span style="display:block; margin-bottom:4px; font-weight:500;">Clinician:</span>
+          <span class="demo-chip" onclick="fillDemo('doctor@twinhealth.demo', 'doctor')">doctor@twinhealth.demo</span>
+        </div>
+      </div>
+
+      <div class="disclaimer-box">
+        <strong>⚠️ Demo Identity Notice:</strong> This application uses email-based local demonstration identities stored in <code>data/users.json</code>. It is designed for development and synthetic research demonstration. Do NOT input real Protected Health Information (PHI).
+      </div>
+    </div>
+
+    <div class="back-home">
+      <a href="/">← Return to Public Home Page</a>
+    </div>
+  </div>
+
+  <script>
+    let currentRole = 'patient';
+
+    function selectRole(role) {
+      currentRole = role;
+      document.getElementById('role-patient').classList.toggle('active', role === 'patient');
+      document.getElementById('role-doctor').classList.toggle('active', role === 'doctor');
+      
+      const emailLabel = document.getElementById('email-label');
+      const emailInput = document.getElementById('login-email');
+      if (role === 'doctor') {
+        emailLabel.textContent = 'Clinician / Doctor Email Address';
+        emailInput.placeholder = 'e.g. doctor@twinhealth.demo';
+      } else {
+        emailLabel.textContent = 'Patient Email Address';
+        emailInput.placeholder = 'e.g. robert.chen@example.com';
+      }
+    }
+
+    function fillDemo(email, role) {
+      selectRole(role);
+      document.getElementById('login-email').value = email;
+      document.getElementById('login-error').style.display = 'none';
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const emailInput = document.getElementById('login-email');
+      const email = emailInput.value.trim().toLowerCase();
+      const errorEl = document.getElementById('login-error');
+      const submitBtn = document.getElementById('btn-login-submit');
+
+      errorEl.style.display = 'none';
+
+      if (!email || !email.includes('@')) {
+        errorEl.textContent = 'Please provide a valid email address.';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = 'Signing in…';
+
+      try {
+        const res = await fetch('/api/auth/demo-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email, role: currentRole })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.detail || 'Login failed. Please try again.');
+        }
+
+        // Store identity in sessionStorage for browser navigation
+        sessionStorage.setItem('twinhealth_user', JSON.stringify({
+          email: data.email,
+          role: data.role,
+          displayName: data.display_name
+        }));
+
+        // Redirect to target workspace
+        window.location.href = data.redirect_url;
+      } catch (err) {
+        errorEl.textContent = err.message;
+        errorEl.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>Continue to Portal</span> <span>→</span>';
+      }
+    }
+
+    // Auto-select role if URL has ?role=
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('role') === 'doctor') {
+      selectRole('doctor');
+    }
+  </script>
+</body>
+</html>

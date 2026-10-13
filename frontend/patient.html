@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TwinHealth AI — Patient Lifestyle Companion</title>
+  <meta name="description" content="Personalized daily lifestyle guidance, chronotherapy routine, and habit progress tracking." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css?v=2026.11" />
+  <style>
+    body {
+      background-color: #f8fafc;
+      color: #0f172a;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+    }
+    .patient-nav {
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 14px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #0f172a;
+    }
+    .brand-logo-badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 18px;
+      box-shadow: 0 2px 8px rgba(13, 148, 136, 0.3);
+    }
+    .user-account-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+    }
+    .patient-pill {
+      background: #f4f4f5;
+      color: #18181b;
+      border: 1px solid #e4e4e7;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    .btn-logout {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: #475569;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+    .btn-logout:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+    .patient-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    /* Hero Banner */
+    .patient-hero {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+    .hero-info-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .hero-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      background: #18181b;
+      color: #ffffff;
+      border: 1px solid #27272a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    .hero-title-group h1 {
+      margin: 0 0 4px;
+      font-size: 22px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .hero-meta-text {
+      font-size: 13px;
+      color: #64748b;
+    }
+    /* View Switcher Tabs */
+    .view-tabs {
+      display: flex;
+      gap: 8px;
+      background: #e2e8f0;
+      padding: 4px;
+      border-radius: 10px;
+      margin-bottom: 24px;
+      max-width: 380px;
+    }
+    .view-tab {
+      flex: 1;
+      text-align: center;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #475569;
+      border-radius: 8px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease;
+    }
+    .view-tab.active {
+      background: white;
+      color: #0d9488;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    /* Date Strip */
+    .date-strip {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .date-nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-nav-day {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-nav-day:hover { background: #f1f5f9; }
+    /* Adherence Card */
+    .adherence-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+    .adherence-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .adherence-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .adherence-pct-badge {
+      font-size: 18px;
+      font-weight: 800;
+      color: #0d9488;
+    }
+    .adherence-track {
+      height: 10px;
+      background: #f1f5f9;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .adherence-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #0d9488 0%, #10b981 100%);
+      border-radius: 999px;
+      transition: width 0.3s ease;
+    }
+    /* Tasks Checklist */
+    .checklist-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      margin-bottom: 24px;
+    }
+    .period-section {
+      margin-bottom: 24px;
+    }
+    .period-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #000000;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .task-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 16px;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      background: #f8fafc;
+      transition: all 0.15s ease;
+    }
+    .task-item.completed {
+      background: #f4f4f5;
+      border-color: #d4d4d8;
+    }
+    .task-item.completed .task-label-text {
+      text-decoration: line-through;
+      color: #71717a;
+    }
+    .task-checkbox-input {
+      width: 20px;
+      height: 20px;
+      accent-color: #000000;
+      cursor: pointer;
+      margin-top: 3px;
+      flex-shrink: 0;
+    }
+    .task-details {
+      flex: 1;
+    }
+    .task-time-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #475569;
+      background: #e2e8f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-right: 6px;
+    }
+    .task-cat-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 500;
+      color: #000000;
+      background: #f4f4f5;
+      border: 1px solid #e4e4e7;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: capitalize;
+    }
+    .task-label-text {
+      margin: 4px 0 2px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #0f172a;
+    }
+    .task-sub-text {
+      font-size: 12px;
+      color: #64748b;
+      margin: 0;
+    }
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+    }
+    .empty-icon { font-size: 36px; margin-bottom: 12px; }
+    .empty-title { font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header class="patient-nav">
+    <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+      <div class="top-left-nav" style="display:inline-flex; align-items:center; gap:8px;">
+        <a href="/" class="btn-logout" style="display:inline-flex; align-items:center; gap:5px; text-decoration:none; color:#334155;" title="Return to Home">
+          <span>🏠</span><span>Home</span>
+        </a>
+        <button type="button" class="btn-logout" onclick="twinHealthLogout()" style="display:inline-flex; align-items:center; gap:5px; color:#dc2626; border-color:#fecaca;" title="Log out of session">
+          <span>🚪</span><span>Logout</span>
+        </button>
+      </div>
+      <a href="/" class="brand-wrap">
+        <div class="brand-logo-badge">✚</div>
+        <div>
+          <div style="font-weight:800; font-size:16px;">TwinHealth <span style="color:#0d9488;">AI</span></div>
+          <div style="font-size:11px; color:#64748b; font-weight:500;">Patient Lifestyle Companion</div>
+        </div>
+      </a>
+    </div>
+
+    <div class="user-account-badge">
+      <span class="patient-pill" id="nav-user-email">Account: Loading…</span>
+    </div>
+  </header>
+
+  <div class="patient-container">
+
+    <!-- Patient Hero Card -->
+    <div class="patient-hero">
+      <div class="hero-info-left">
+        <div class="hero-avatar">👤</div>
+        <div class="hero-title-group">
+          <h1 id="patient-display-name">Welcome Back</h1>
+          <div class="hero-meta-text">
+            <span>Email: <strong id="patient-meta-email">patient@example.com</strong></span> · 
+            <span>Plan: <strong id="patient-plan-status">Loading…</strong></span> · 
+            <span id="patient-updated-date">Updated Today</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:12px; color:#64748b; text-align:right;">Synchronized with Clinician:</div>
+        <div id="doctor-attending-name" style="font-size:13px; font-weight:600; color:#0f172a;">Dr. Sarah Mitchell, MD</div>
+      </div>
+    </div>
+
+    <!-- Segmented View Tabs (Daily vs Weekly) -->
+    <div class="view-tabs">
+      <div class="view-tab active" id="tab-view-daily" onclick="switchView('daily')">
+        📅 Daily Routine
+      </div>
+      <div class="view-tab" id="tab-view-weekly" onclick="switchView('weekly')">
+        📊 Weekly Schedule
+      </div>
+    </div>
+
+    <!-- Prescriptions & Uploaded Medications Card -->
+    <div class="checklist-card" id="patient-medication-card" style="margin-bottom:24px; background:#ffffff; border:1.5px solid #000000; border-radius:14px; padding:20px 24px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+        <div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:20px;">💊</span>
+            <h3 style="margin:0; font-size:16px; font-weight:700; color:#000000;">Prescriptions &amp; Medications</h3>
+          </div>
+          <p style="margin:4px 0 0; font-size:13px; color:#52525b;">
+            Official doctor prescription slip and medication documentation for this account.
+          </p>
+        </div>
+        <div id="patient-medication-actions">
+          <span style="font-size:13px; color:#71717a; font-style:italic;">Checking for uploaded prescriptions…</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Daily View Container -->
+    <div id="view-daily-content">
+      <!-- Date Strip -->
+      <div class="date-strip">
+        <div class="date-nav-controls">
+          <button class="btn-nav-day" onclick="shiftDay(-1)">‹ Previous Day</button>
+          <span id="current-day-heading" style="font-size:14px; font-weight:700; color:#0f172a;">Today</span>
+          <button class="btn-nav-day" onclick="shiftDay(1)">Next Day ›</button>
+        </div>
+        <button class="btn-nav-day" onclick="goToToday()">Return to Today</button>
+      </div>
+
+      <!-- Adherence Progress Bar Card -->
+      <div class="adherence-card">
+        <div class="adherence-header">
+          <div class="adherence-title">Today's Lifestyle Goal Adherence</div>
+          <div class="adherence-pct-badge" id="adherence-pct-val">0%</div>
+        </div>
+        <div class="adherence-track">
+          <div class="adherence-fill" id="adherence-fill-bar" style="width:0%;"></div>
+        </div>
+        <div style="font-size:12px; color:#64748b; display:flex; justify-content:space-between;">
+          <span id="adherence-count-text">0 of 0 activities completed</span>
+          <span id="adherence-sync-text">✓ Real-time sync with doctor enabled</span>
+        </div>
+      </div>
+
+      <!-- Checklist Section -->
+      <div class="checklist-card">
+        <div id="checklist-tasks-root">
+          <div style="text-align:center; padding:32px; color:#64748b;">Loading your personalized schedule…</div>
+        </div>
+      </div>
+
+      <!-- Doctor Notes Card -->
+      <div class="checklist-card" id="doctor-notes-card" style="display:none; background:#f4f4f5; border-color:#e4e4e7;">
+        <h3 style="margin:0 0 8px; font-size:14px; color:#09090b;">🩺 Attending Physician Instructions</h3>
+        <p id="doctor-notes-text" style="margin:0; font-size:13px; color:#3f3f46; line-height:1.5;"></p>
+      </div>
+    </div>
+
+    <!-- Weekly View Container -->
+    <div id="view-weekly-content" style="display:none;">
+      <div class="checklist-card">
+        <h2 style="font-size:18px; margin:0 0 16px;">7-Day Adherence &amp; Weekly Protocol</h2>
+        <div id="weekly-matrix-root">
+          <div style="text-align:center; padding:32px; color:#64748b;">Loading weekly compliance matrix…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State Container (If no care plan assigned) -->
+    <div id="empty-plan-view" class="empty-state" style="display:none;">
+      <div class="empty-icon">📋</div>
+      <div class="empty-title">No Active Care Plan Assigned Yet</div>
+      <p class="empty-sub">
+        Your clinician has not yet published an approved daily lifestyle or chronotherapy routine for this account. Once your physician completes your risk assessment and approves your plan, your personalized daily schedule will appear here.
+      </p>
+    </div>
+
+  </div>
+
+  <script>
+    function twinHealthLogout() {
+      try {
+        sessionStorage.removeItem('twinhealth_user');
+      } catch (e) {}
+      window.location.href = '/login?role=patient';
+    }
+  </script>
+  <script src="/static/patient.js?v=2026.11"></script>
+</body>
+</html>
